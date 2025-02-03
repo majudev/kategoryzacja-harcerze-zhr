@@ -2,17 +2,18 @@ services:
   frontend:
     build: frontend
     restart: always
-    env_file:
-      - frontend/.env
+#    env_file:
+#      - frontend/.env
     environment:
       REACT_APP_API_URL: http://localhost:8080/api
   backend:
     build: backend
     restart: always
-    env_file:
-      - backend/.env
+#    env_file:
+#      - backend/.env
     environment:
-      DATABASE_URL: mysql://master:master@mysql:3306/master
+      DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
+      BCRYPT_ROUNDS: 11
   mysql:
     image: mariadb:11
     restart: always
@@ -22,7 +23,7 @@ services:
     environment:
       MARIADB_PASSWORD: master
       MARIADB_USER: master
-      MARIADB_DATABASE: master
+      MARIADB_DATABASE: kategoryzacja
       MARIADB_RANDOM_ROOT_PASSWORD: yes
   redis:
     image: redis:alpine

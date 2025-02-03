@@ -9,6 +9,146 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+/// ----------------------------- ///
+///        User management        ///
+/// ----------------------------- ///
+enum UserRole {
+  USER
+  DISTRICT_COORDINATOR
+  TOPLEVEL_COORDINATOR
+  ADMIN
+}
+
+model User {
+  id          Int @id() @default(autoincrement())
+  email       String @unique
+  password    String
+  activationKey String? @default(uuid()) @unique
+  createdAt   DateTime @default(now())
+  lastLogin   DateTime @default(now())
+
+  role        UserRole @default(USER)
+  districtAdminId Int?
+  districtAdmin   District? @relation(fields: [districtAdminId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+
+  team        TeamJoints?
+
+  @@index([email])
+  @@index([role])
+  @@index([role, districtAdminId])
+}
+
+model TeamJoints {
+  userId    Int @unique
+  user      User @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  teamId    Int
+  team      Team @relation(fields: [teamId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  accepted  Boolean @default(false)
+
+  @@id([userId, teamId])
+  @@index([userId])
+  @@index([teamId])
+}
+
+/// ----------------------------- ///
+///        Team management        ///
+/// ----------------------------- ///
+model Team {
+  id          Int @id @default(autoincrement())
+  name        String
+  shadow      Boolean @default(false)
+  createdAt   DateTime @default(now())
+
+  districtId  Int
+  district    District @relation(fields: [districtId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+
+  owners      TeamJoints[]
+
+  tasks       TaskJoint[]
+
+  @@index([shadow])
+  @@index([districtId])
+}
+
+model District {
+  id          Int @id @default(autoincrement())
+  name        String
+  shadow      Boolean @default(false)
+  autoaccept  Boolean @default(true)
+
+  teams       Team[]
+
+  admins      User[]
+}
+
+/// ----------------------------- ///
+///        Task management        ///
+/// ----------------------------- ///
+model CategorizationYear {
+  id          Int @id @default(autoincrement())
+  name        String
+  createdAt   DateTime @default(now())
+
+  taskGroup   CategorizationTaskGroup[]
+}
+
+model CategorizationTaskGroup {
+  id          Int @id @default(autoincrement())
+  name        String
+
+  categorizationYearId  Int
+  categorizationYear    CategorizationYear @relation(fields: [categorizationYearId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  primaryTasks  CategorizationTask[] @relation("ctasks_group_primary")
+  secondaryTasks  CategorizationTask[] @relation("ctasks_group_secondary")
+}
+
+enum CategorizationTaskType {
+  BOOLEAN
+  LINEAR
+  LINEAR_REF
+  PARABOLIC_REF
+  //FORMULA
+}
+
+model CategorizationTask {
+  id          Int @id @default(autoincrement())
+  name        String
+  primaryGroupId      Int
+  primaryGroup        CategorizationTaskGroup @relation("ctasks_group_primary", fields: [primaryGroupId], references: [id])
+  secondaryGroupId    Int?
+  secondaryGroup      CategorizationTaskGroup? @relation("ctasks_group_secondary", fields: [secondaryGroupId], references: [id])
+  split               Float @default(0.5)
+
+  typeId      Int
+  type        CategorizationTaskType
+  multiplier  Int?
+  //formula     String?
+  refValId    Int?
+  refVal      CategorizationTask? @relation("ctask_refval", fields: [refValId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  refVals     CategorizationTask[] @relation("ctask_refval")
+
+  joints      TaskJoint[]
+
+  @@index([primaryGroupId])
+  @@index([secondaryGroupId])
+}
+
+model TaskJoint {
+  taskId      Int
+  task        CategorizationTask @relation(fields: [taskId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  teamId      Int
+  team        Team @relation(fields: [teamId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  favourite   Boolean @default(false)
+  value       Int?
+
+  @@id([taskId, teamId])
+  @@index([teamId, favourite])
+  @@index([teamId, value])
 }
