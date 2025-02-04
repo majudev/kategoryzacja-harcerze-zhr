@@ -6,7 +6,7 @@ import GoogleButton from "react-google-button";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const Login = () => {
+const Login = ({reloadHook} : {reloadHook : React.Dispatch<React.SetStateAction<boolean>>}) => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ email: "", password: "", captcha: "" });
@@ -15,6 +15,7 @@ const Login = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    reloadHook(true); // Reload hook - if we got redirected here, probably there was a reason
     loadCaptcha();
   }, []);
 
@@ -38,12 +39,13 @@ const Login = () => {
 
     try {
       await axios.post(`${API_ROOT}/auth/login`, form);
-      navigate('/');
+      navigate('/welcome');
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
       loadCaptcha();
     } finally {
       setLoading(false);
+      reloadHook(true);
     }
   };
 

@@ -5,7 +5,7 @@ declare module "express-session" {
         authenticated?: boolean;
         
         userId?: number;
-        userRole?: string;
+        userRole?: "USER" | "DISTRICT_COORDINATOR" | "TOPLEVEL_COORDINATOR" | "ADMIN";
         userDistrictAdmin?: {id: number; name: string} | null;
 
         captcha?: string;

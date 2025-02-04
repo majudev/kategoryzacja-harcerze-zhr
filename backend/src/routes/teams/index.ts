@@ -1,7 +1,6 @@
 import { Router, Request, Response } from "express";
 
 import { PrismaClient } from "@prisma/client";
-import { isStringLiteral } from "typescript";
 
 const router = Router();
 const prisma = new PrismaClient();

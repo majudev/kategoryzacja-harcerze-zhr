@@ -10,7 +10,7 @@ import WelcomeStep3 from "./Step3";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const WelcomeOverlay = () => {
+const WelcomeOverlay = ({reloadHook} : {reloadHook : React.Dispatch<React.SetStateAction<boolean>>}) => {
   const navigate = useNavigate();
 
   const [userinfo, setUserinfo] = useState<{
@@ -31,17 +31,21 @@ const WelcomeOverlay = () => {
   }, []);
 
   useEffect(() => {
-    if(step === "end") navigate("/kategoryzacja");
+    if(step === "end"){
+      reloadHook(true);
+      navigate("/");
+    }
   }, [step]);
 
   useEffect(() => {
     if(userinfo !== undefined){
-      console.log(userinfo);
-      if(userinfo && userinfo.team !== null){
-        if(userinfo.team.accepted){
-          setStep("end");
-        }else setStep("userack");
-      }else setStep("1");
+      if(userinfo.role === "USER"){
+        if(userinfo.team !== null){
+          if(userinfo.team.accepted){
+            setStep("end");
+          }else setStep("userack");
+        }else setStep("1");
+      }else navigate("/");
     }
   }, [userinfo]);
 
@@ -50,6 +54,7 @@ const WelcomeOverlay = () => {
       const res = await axios.get(`${API_ROOT}/user/`);
       setUserinfo({...res.data, createdAt: new Date(res.data.createdAt), lastLogin: new Date(res.data.lastLogin)});
     } catch (err: any) {
+      if(axios.isAxiosError(err) && err.response?.status === 401){ navigate("/login"); }
       setError(err.response?.data?.message || "Could not fetch user data");
     }
   };
