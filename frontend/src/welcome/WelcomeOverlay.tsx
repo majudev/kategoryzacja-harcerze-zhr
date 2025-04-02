@@ -24,7 +24,8 @@ const WelcomeOverlay = ({reloadHook} : {reloadHook : React.Dispatch<React.SetSta
     lastLogin: Date;
     role: "USER"|"DISTRICT_COORDINATOR"|"TOPLEVEL_COORDINATOR"|"ADMIN";
     districtAdmin: {id: number; name: string;} | null;
-    team: {accepted: boolean}|null;
+    team: {}|null;
+    teamAccepted: boolean;
   }>();
   const [error, setError] = useState("");
   const [step, setStep] = useState<"0"|"1"|"2"|"3"|"end"|"adminack"|"userack">("0");
@@ -45,7 +46,7 @@ const WelcomeOverlay = ({reloadHook} : {reloadHook : React.Dispatch<React.SetSta
     if(userinfo !== undefined){
       if(userinfo.role === "USER"){
         if(userinfo.team !== null){
-          if(userinfo.team.accepted){
+          if(userinfo.teamAccepted){
             setStep("end");
           }else setStep("userack");
         }else setStep("1");

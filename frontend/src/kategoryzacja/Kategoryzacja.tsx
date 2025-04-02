@@ -8,14 +8,14 @@ import DashboardLayout from "./dashboard";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const Kategoryzacja = ({userinfo} : {userinfo: {role: "USER"|"DISTRICT_COORDINATOR"|"TOPLEVEL_COORDINATOR"|"ADMIN"; districtAdmin: {id: number; name: string;} | null; team: {accepted: boolean}|null;} | null}) => {
+const Kategoryzacja = ({userinfo} : {userinfo: {role: "USER"|"DISTRICT_COORDINATOR"|"TOPLEVEL_COORDINATOR"|"ADMIN"; districtAdmin: {id: number; name: string;} | null; team: {}|null; teamAccepted: boolean;} | null}) => {
     const navigate = useNavigate();
 
     // After hook has executed - check routes HERE
     useEffect(() => {
         if(userinfo !== null){
             if(userinfo.role === "USER"){
-                if(userinfo.team === null || !userinfo.team.accepted){
+                if(userinfo.team === null || !userinfo.teamAccepted){
                     console.log("Redirecting to /welcome");
                     navigate("/welcome", {replace: true});
                 }
