@@ -1,10 +1,8 @@
 import { useState, useEffect, ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import NiceNavLink from "../NiceNavLink";
+import NiceNavLink from "./NiceNavLink";
 
 const NavbarOverlay = ({ userinfo, children } : {children: ReactNode; userinfo: {role: "USER"|"DISTRICT_COORDINATOR"|"TOPLEVEL_COORDINATOR"|"ADMIN"; districtAdmin: {id: number; name: string;} | null} | null}) => {
-  const navigate = useNavigate();
-
   return (
     <div className="navbar-overlay">
       <nav className="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">

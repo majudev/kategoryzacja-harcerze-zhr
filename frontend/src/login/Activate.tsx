@@ -9,6 +9,7 @@ const ActivateUser = () => {
   const { activationkey } = useParams();
   const navigate = useNavigate();
 
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -18,7 +19,10 @@ const ActivateUser = () => {
   const activateUser = async () => {
     try {
       await axios.post(`${API_ROOT}/auth/activate/${activationkey}`);
-      navigate('/login');
+      setSuccess(true);
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (err: any) {
       setError(err.response?.data?.message || "Nie udało się aktywować konta");
     }
@@ -27,6 +31,7 @@ const ActivateUser = () => {
   return (
     <div className="d-flex vh-100 justify-content-center align-items-center angled-bg">
       <div className="card shadow p-4" style={{ width: "350px", zIndex: 1, position: "relative" }}>
+        {success && <div className="alert alert-success">Udało się! Teraz możesz się zalogować.</div>}
         {error && <div className="alert alert-danger">{translate(error)}</div>}
       </div>
     </div>

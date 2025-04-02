@@ -4,28 +4,13 @@ import translate from "../translator";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const WelcomeStep3 = ({setStep, userId} : {setStep: React.Dispatch<React.SetStateAction<any>>; userId: number}) => {
+const WelcomeStep3 = ({setStep, userId, district, districts} : {setStep: React.Dispatch<React.SetStateAction<any>>; userId: number; district: string; districts: Array<{id: number; name: string;}>}) => {
   const [loading, setLoading] = useState(false);
 
-  const [districts, setDistricts] = useState<Array<{id: number; name: string;}>>([]);
   const [error, setError] = useState("");
 
-  const [district, setDistrict] = useState("none");
+  //const [district, setDistrict] = useState("none");
   const [teamName, setTeamName] = useState("");
-
-  useEffect(() => {
-    loadDistricts();
-  }, []);
-
-  const loadDistricts = async () => {
-    try {
-      const res = await axios.get(`${API_ROOT}/districts/`);
-
-      setDistricts(res.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Could not fetch districts list");
-    }
-  };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -35,8 +20,8 @@ const WelcomeStep3 = ({setStep, userId} : {setStep: React.Dispatch<React.SetStat
     try {
       const response = await axios.post(`${API_ROOT}/teams/`, {name: teamName, districtId: parseInt(district)});
       
-      const permissionJoints = response.data.owners.filter((entry: {userId: number}) => {return entry.userId === userId;});
-      if(!(permissionJoints.length > 0 && permissionJoints[0].accepted)){
+      const permissionJoints = response.data.owners.filter((entry: {id: number}) => {return entry.id === userId;});
+      if(!(permissionJoints.length > 0 && permissionJoints[0].teamAccepted)){
         setStep("userack");
       }else{
         setStep("end");
@@ -56,7 +41,7 @@ const WelcomeStep3 = ({setStep, userId} : {setStep: React.Dispatch<React.SetStat
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label className="form-label">Wybierz swoją Chorągiew z listy poniżej:</label>
-          <select className="form-control" value={district} onChange={(e) => {setDistrict(e.target.value)}} required>
+          <select className="form-control" value={district} /*onChange={(e) => {setDistrict(e.target.value)}}*/ required disabled>
             <option value="none" disabled>Wybierz Chorągiew...</option>
             {
               districts.map((district) => {

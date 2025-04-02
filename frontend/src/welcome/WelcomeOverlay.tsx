@@ -13,6 +13,9 @@ const API_ROOT = process.env.REACT_APP_API_URL;
 const WelcomeOverlay = ({reloadHook} : {reloadHook : React.Dispatch<React.SetStateAction<boolean>>}) => {
   const navigate = useNavigate();
 
+  const [districts, setDistricts] = useState<Array<{id: number; name: string;}>>([]);
+  const [district, setDistrict] = useState("none");
+
   const [userinfo, setUserinfo] = useState<{
     id: number;
     email: string;
@@ -28,6 +31,7 @@ const WelcomeOverlay = ({reloadHook} : {reloadHook : React.Dispatch<React.SetSta
 
   useEffect(() => {
     loadUserinfo();
+    loadDistricts();
   }, []);
 
   useEffect(() => {
@@ -59,6 +63,16 @@ const WelcomeOverlay = ({reloadHook} : {reloadHook : React.Dispatch<React.SetSta
     }
   };
 
+  const loadDistricts = async () => {
+    try {
+      const res = await axios.get(`${API_ROOT}/districts/`);
+
+      setDistricts(res.data);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Could not fetch districts list");
+    }
+  };
+
   return (
     <div className="d-flex vh-100 justify-content-center align-items-center bg-light">
       <div className="card shadow p-4" style={{ width: "550px" }}>
@@ -66,8 +80,8 @@ const WelcomeOverlay = ({reloadHook} : {reloadHook : React.Dispatch<React.SetSta
         {step === "0" && <div className="spinner-border text-primary" role="status"><span className="visually-hidden">Ładowanie...</span></div>}
         {step === "1" && <WelcomeStep1 setStep={setStep} />}
         {userinfo && step === "adminack" && <WelcomeStepAdminAck email={userinfo.email} setStep={setStep} />}
-        {step === "2" && <WelcomeStep2 setStep={setStep} />}
-        {userinfo && step === "3" && <WelcomeStep3 setStep={setStep} userId={userinfo.id} />}
+        {step === "2" && <WelcomeStep2 setStep={setStep} districts={districts} district={district} setDistrict={setDistrict}/>}
+        {userinfo && step === "3" && <WelcomeStep3 setStep={setStep} userId={userinfo.id} districts={districts} district={district} />}
         {step === "userack" && <WelcomeStepUserAck/>}
       </div>
     </div>

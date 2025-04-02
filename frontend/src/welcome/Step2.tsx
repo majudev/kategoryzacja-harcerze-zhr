@@ -5,34 +5,19 @@ import translate from "../translator";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const WelcomeStep2 = ({setStep} : {setStep: React.Dispatch<React.SetStateAction<any>>}) => {
+const WelcomeStep2 = ({setStep, districts, district, setDistrict} : {setStep: React.Dispatch<React.SetStateAction<any>>; districts: Array<{id: number; name: string;}>; district: string; setDistrict: React.Dispatch<React.SetStateAction<string>>}) => {
   const [loading, setLoading] = useState(false);
 
   const [teams, setTeams] = useState<Array<{id: number; name: string;}>>([]);
-  const [districts, setDistricts] = useState<Array<{id: number; name: string;}>>([]);
   const [error, setError] = useState("");
 
-  const [district, setDistrict] = useState("none");
+  //const [district, setDistrict] = useState("none");
   const [team, setTeam] = useState("none");
   const [teamName, setTeamName] = useState("");
 
   useEffect(() => {
-    loadDistricts();
-  }, []);
-
-  useEffect(() => {
     if(!isNaN(parseInt(district))) loadTeams();
   }, [district]);
-
-  const loadDistricts = async () => {
-    try {
-      const res = await axios.get(`${API_ROOT}/districts/`);
-
-      setDistricts(res.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Could not fetch districts list");
-    }
-  };
 
   const loadTeams = async () => {
     try {

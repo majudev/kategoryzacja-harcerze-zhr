@@ -8,6 +8,7 @@ import './App.css';
 import WelcomeOverlay from './welcome/WelcomeOverlay';
 import Logout from './login/Logout';
 import Root from './root/Root';
+import Kategoryzacja from './kategoryzacja/Kategoryzacja';
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -58,10 +59,9 @@ function App(): ReactElement {
           <Route path="/logout" element={<Logout reloadHook={reloadHook} />} />
           <Route path="/welcome" element={<WelcomeOverlay reloadHook={reloadHook}/>} />
 
-          <Route path="/" element={<Root userinfo={userinfo === undefined ? null : userinfo} />} />
+          <Route path="/" element={<Root userinfo={userinfo} />} />
 
-          <Route path="/kategoryzacja">
-          </Route>
+          <Route path="/kategoryzacja" element={<Kategoryzacja userinfo={userinfo}/>} />
 
           <Route path="/admin">
           </Route>

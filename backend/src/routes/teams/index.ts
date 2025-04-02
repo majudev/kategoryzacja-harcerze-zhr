@@ -57,29 +57,39 @@ router.post('/', async (req: Request, res: Response) => {
         return;
     }
 
-    const team = await prisma.team.create({
-        data: {
-            name: name,
-            districtId: districtId,
-            owners: {
-                create: {
-                    userId: req.session.userId,
-                    accepted: district.autoaccept,
-                }
+    const team = await prisma.$transaction(async (tx) => {
+        // We first update the acceptation to prevent doubling of the select query
+        await tx.user.update({
+            where: {
+                id: req.session.userId
+            },
+            data: {
+              teamAccepted: district.autoaccept,
             }
-        },
-        select: {
-            id: true,
-            name: true,
-            shadow: true,
-            owners: {
-                select: {
-                    userId: true,
-                    accepted: true,
+        });
+        return await tx.team.create({
+            data: {
+                name: name,
+                districtId: districtId,
+                owners: {
+                    connect: {
+                        id: req.session.userId 
+                    }
                 }
             },
-            districtId: true,
-        }
+            select: {
+                id: true,
+                name: true,
+                shadow: true,
+                owners: {
+                    select: {
+                        id: true,
+                        teamAccepted: true,
+                    }
+                },
+                districtId: true,
+            }
+        });
     });
 
     res.status(200).json(team);

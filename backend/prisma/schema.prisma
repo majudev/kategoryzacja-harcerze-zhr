@@ -35,24 +35,13 @@ model User {
   districtAdminId Int?
   districtAdmin   District? @relation(fields: [districtAdminId], references: [id], onUpdate: Cascade, onDelete: Restrict)
 
-  team        TeamJoints?
+  teamId      Int?
+  team        Team? @relation(fields: [teamId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  teamAccepted Boolean @default(false)
 
-  @@index([email])
+  //@@index([email]) //uniqueness guarantees index
   @@index([role])
   @@index([role, districtAdminId])
-}
-
-model TeamJoints {
-  userId    Int @unique
-  user      User @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Restrict)
-  teamId    Int
-  team      Team @relation(fields: [teamId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-
-  accepted  Boolean @default(false)
-
-  @@id([userId, teamId])
-  @@index([userId])
-  @@index([teamId])
 }
 
 /// ----------------------------- ///
@@ -67,7 +56,7 @@ model Team {
   districtId  Int
   district    District @relation(fields: [districtId], references: [id], onUpdate: Cascade, onDelete: Restrict)
 
-  owners      TeamJoints[]
+  owners      User[]
 
   tasks       TaskJoint[]
 
@@ -84,6 +73,8 @@ model District {
   teams       Team[]
 
   admins      User[]
+
+  @@index([shadow])
 }
 
 /// ----------------------------- ///
@@ -149,6 +140,6 @@ model TaskJoint {
   value       Int?
 
   @@id([taskId, teamId])
-  @@index([teamId, favourite])
-  @@index([teamId, value])
+  //@@index([teamId, favourite])
+  //@@index([teamId, value])
 }
