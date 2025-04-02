@@ -8,7 +8,7 @@ import { UserInfo, Category, Task } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const Sidebar = ({type, userinfo, renderableCategories, myTasksMode, setMyTasksMode, activeCategory, setActiveCategory} : {type: "desktop"|"mobile"; userinfo: UserInfo | null; renderableCategories: Array<Category>; myTasksMode: boolean; setMyTasksMode: React.Dispatch<React.SetStateAction<boolean>>; activeCategory: string; setActiveCategory: React.Dispatch<React.SetStateAction<string>>}) => {
+const Sidebar = ({type, userinfo, renderableCategories, myTasksMode, setMyTasksMode, activeCategory, setActiveCategory} : {type: "desktop"|"mobile"; userinfo: UserInfo | null; renderableCategories: Array<Category>; myTasksMode: boolean; setMyTasksMode: React.Dispatch<React.SetStateAction<boolean>>; activeCategory: number; setActiveCategory: React.Dispatch<React.SetStateAction<number>>}) => {
     // Desktop sidebar
     if(type === "desktop") return (
       <div className="bg-light border-end d-none d-lg-flex flex-column flex-shrink-0" style={{ width: '300px' }}>
@@ -35,7 +35,11 @@ const Sidebar = ({type, userinfo, renderableCategories, myTasksMode, setMyTasksM
         </div>
 
         <div className="flex-grow-1 overflow-auto">
-          {renderableCategories.map(cat => (
+          {renderableCategories.map(cat => {
+            const allTasksLength = cat.tasks.length;
+            const myTasksLength = cat.tasks.filter(t => t.favourite).length;
+            const tasksLength = myTasksMode ? myTasksLength : allTasksLength;
+            return (
             <div 
               key={cat.id}
               className={`p-3 border-bottom ${activeCategory === cat.id ? 'bg-white' : ''}`}
@@ -43,19 +47,19 @@ const Sidebar = ({type, userinfo, renderableCategories, myTasksMode, setMyTasksM
               style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
             >
               <div className="d-flex justify-content-between align-items-center">
-                <h6 className="mb-0">{cat.title}</h6>
+                <h6 className="mb-0">{cat.name}</h6>
                 <span className="badge bg-primary rounded-pill">
-                  {cat.tasks.filter(t => t.checked).length}/{cat.tasks.length}
+                  {cat.tasks.filter(t => t.checked).length}/{tasksLength}
                 </span>
               </div>
               <div className="progress mt-2" style={{height: '3px'}}>
                 <div 
                   className="progress-bar bg-success" 
-                  style={{width: `${(cat.tasks.filter(t => t.checked).length / cat.tasks.length) * 100}%`}}
+                  style={{width: `${tasksLength > 0 ? ((cat.tasks.filter(t => t.checked).length / cat.tasks.length) * 100) : 0}%`}}
                 />
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
     );
@@ -93,7 +97,7 @@ const Sidebar = ({type, userinfo, renderableCategories, myTasksMode, setMyTasksM
                     onClick={() => setActiveCategory(cat.id)}
                     style={{ whiteSpace: 'nowrap' }}
                   >
-                    {cat.title}
+                    {cat.name}
                   </button>
                 ))}
               </div>

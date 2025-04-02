@@ -11,12 +11,12 @@ import { UserInfo, Category as CategoryType } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const CategoryLayout = ({userinfo, category: cat, myTasksMode} : {userinfo: UserInfo | null; category: CategoryType; myTasksMode: boolean;}) => {
+const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask} : {userinfo: UserInfo | null; category: CategoryType; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void}) => {
     return (
       <>
-        <h4 className="mb-3">{cat.title} Tasks</h4>
+        <h4 className="mb-3">{cat.name}</h4>
         <div className="list-group">
-          {(myTasksMode ? cat.tasks.filter(t => t.starred) : cat.tasks).map(task => (
+          {(myTasksMode ? cat.tasks.filter(t => t.favourite) : cat.tasks).map(task => (
             <div
               key={task.id}
               className="list-group-item list-group-item-action d-flex align-items-center"
@@ -28,13 +28,13 @@ const CategoryLayout = ({userinfo, category: cat, myTasksMode} : {userinfo: User
                 /*onChange={() => toggleTask(task.id)}*/
               />
               <span className={`flex-grow-1 ${task.checked ? 'text-muted text-decoration-line-through' : ''}`}>
-                {task.title}
+                {task.name}
               </span>
               <button 
                 className="btn btn-link p-0 ms-2"
-                /*onClick={() => toggleStar(task.id)}*/
+                onClick={() => toggleMyTask(task.id, !task.favourite)}
               >
-                <i className={`bi bi-star${task.starred ? '-fill' : ''} ${task.starred ? 'text-warning' : 'text-secondary'}`} />
+                <i className={`bi bi-star${task.favourite ? '-fill' : ''} ${task.favourite ? 'text-warning' : 'text-secondary'}`} />
               </button>
             </div>
           ))}

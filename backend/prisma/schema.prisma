@@ -116,7 +116,6 @@ model CategorizationTask {
   secondaryGroup      CategorizationTaskGroup? @relation("ctasks_group_secondary", fields: [secondaryGroupId], references: [id])
   split               Float @default(0.5)
 
-  typeId      Int
   type        CategorizationTaskType
   multiplier  Int?
   //formula     String?
@@ -140,6 +139,7 @@ model TaskJoint {
   value       Int?
 
   @@id([taskId, teamId])
+  @@index([teamId])
   //@@index([teamId, favourite])
   //@@index([teamId, value])
 }

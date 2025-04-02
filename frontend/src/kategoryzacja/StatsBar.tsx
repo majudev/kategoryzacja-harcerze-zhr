@@ -8,10 +8,10 @@ import { Category, UserInfo } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const StatsBar = ({userinfo, renderableCategories, myTasksMode} : {userinfo: UserInfo | null; renderableCategories: Array<Category>; myTasksMode: boolean}) => {
-    const allTasks = renderableCategories.flatMap(cat => cat.tasks);
+const StatsBar = ({userinfo, categories, myTasksMode} : {userinfo: UserInfo | null; categories: Array<Category>; myTasksMode: boolean}) => {
+    const allTasks = categories.flatMap(cat => cat.tasks);
     const completedTasks = allTasks.filter(t => t.checked).length;
-    const starredTasks = allTasks.filter(t => t.starred);
+    const starredTasks = allTasks.filter(t => t.favourite);
 
     return (
       <div className="row g-4 mb-4">

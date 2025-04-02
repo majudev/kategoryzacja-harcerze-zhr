@@ -123,4 +123,60 @@ router.get('/by-district-id/:districtId', async (req: Request, res: Response) =>
     res.status(200).json(teams);
 });
 
+router.get('/', async (req: Request, res: Response) => {
+    if(!req.session.userId){
+        res.status(500).end();
+        return;
+    }
+
+    const user = await prisma.user.findUnique({
+        where: {
+            id: req.session.userId,
+        },
+        select: {
+            team: {
+                select: {
+                    id: true,
+                    name: true,
+
+                    createdAt: true,
+                    
+                    districtId: true,
+                    district: {
+                        select: {
+                            id: true,
+                            name: true,
+                        }
+                    },
+
+                    shadow: true,
+
+                    owners: {
+                        select: {
+                            email: true,
+                        }
+                    }
+                }
+            },
+            teamAccepted: true,
+        }
+    });
+    if(!user){ // should never happen
+        res.status(500).end();
+        return;
+    }
+
+    if(user.team === null){
+        res.status(404).json({ message: "you have not yet registered your team" });
+        return;
+    }
+
+    if(!user.teamAccepted){
+        res.status(403).json({ message: "you don't have permission to view this team" });
+        return;
+    }
+
+    res.status(200).json(user.team);
+});
+
 export default router;

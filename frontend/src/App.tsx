@@ -5,6 +5,7 @@ import Login from './login/Login';
 import Register from './login/Register';
 import Activate from './login/Activate';
 import './App.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import WelcomeOverlay from './welcome/WelcomeOverlay';
 import Logout from './login/Logout';
 import Root from './root/Root';

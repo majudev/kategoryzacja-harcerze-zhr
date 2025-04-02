@@ -32,6 +32,7 @@ router.get('/', async (req: Request, res: Response) => {
 
             team: {
                 select: {
+                    id: true,
                     name: true,
                     createdAt: true,
                     district: {

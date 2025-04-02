@@ -10,19 +10,19 @@ import { Category, UserInfo } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const SummaryLayout = ({userinfo, categories, myTasksMode} : {userinfo: UserInfo | null; categories: Array<Category>; myTasksMode: boolean}) => {
+const SummaryLayout = ({userinfo, categories, myTasksMode, toggleMyTask} : {userinfo: UserInfo | null; categories: Array<Category>; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void}) => {
     return (
       <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
         {categories.map((category) => {
           const filteredTasks = myTasksMode
-            ? category.tasks.filter((task) => task.starred)
+            ? category.tasks.filter((task) => task.favourite)
             : category.tasks;
 
           return (
             <div key={category.id} className="col">
               <div className="card h-100 shadow-sm">
                 <div className="card-header d-flex justify-content-between align-items-center">
-                  <h5 className="mb-0">{category.title}</h5>
+                  <h5 className="mb-0">{category.name}</h5>
                   <small>
                     {filteredTasks.filter((t) => t.checked).length}/{filteredTasks.length}
                   </small>
@@ -40,11 +40,11 @@ const SummaryLayout = ({userinfo, categories, myTasksMode} : {userinfo: UserInfo
                         <span
                           className={`flex-grow-1 ${task.checked ? 'text-muted text-decoration-line-through' : ''}`}
                         >
-                          {task.title}
+                          {task.name}
                         </span>
                         <i
-                          className={`bi bi-star${task.starred ? '-fill' : ''} text-warning fs-5`}
-                          /*onClick={() => toggleStar(task.id)}*/
+                          className={`bi bi-star${task.favourite ? '-fill' : ''} text-warning fs-5`}
+                          onClick={() => toggleMyTask(task.id, !task.favourite)}
                           style={{ cursor: 'pointer' }}
                         />
                       </li>
