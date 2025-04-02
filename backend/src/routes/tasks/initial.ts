@@ -1,7 +1,6 @@
 import { Router, Request, Response } from "express";
 
 import { PrismaClient } from "@prisma/client";
-import { calculateTaskScore } from "../../utils/taskcalc";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -43,6 +42,8 @@ router.get('/', async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
+
+          displayPriority: true,
         },
         orderBy: {
           name: 'desc',
@@ -66,10 +67,11 @@ router.get('/', async (req: Request, res: Response) => {
         return {
           ...task,
           value: (joint !== undefined ? joint.value : false),
+          displayPriority: undefined,
         };
       });
 
-      return populatedTasks;
+      return populatedTasks.sort((a, b) => (a.displayPriority !== b.displayPriority) ? (a.displayPriority - b.displayPriority) : a.name.localeCompare(b.name));
     });
 
     res.status(200).json(tasks);

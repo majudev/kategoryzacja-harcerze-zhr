@@ -17,7 +17,7 @@ const InitialTasksLayout = ({userinfo, tasks, toggleInitialTask} : {userinfo: Us
                 <input
                   type="checkbox"
                   className="form-check-input me-3 flex-shrink-0"
-                  checked={task.value}
+                  checked={task.value > 0}
                   onChange={() => toggleInitialTask(task.id, !task.value)}
                 />
                 <span className={`flex-grow-1 ${task.value ? 'text-muted text-decoration-line-through' : ''}`}>

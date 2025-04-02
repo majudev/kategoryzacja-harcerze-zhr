@@ -74,7 +74,9 @@ router.get('/', async (req: Request, res: Response) => {
               multiplier: true,
               refValId: true,
             }
-          }
+          },
+
+          displayPriority: true,
         },
         orderBy: [
           {
@@ -108,7 +110,7 @@ router.get('/', async (req: Request, res: Response) => {
 
           return {
             ...task,
-            value: (joint !== undefined ? joint.value : null),
+            value: (joint !== undefined ? joint.value : 0),
             favourite: (joint !== undefined ? joint.favourite : false),
             points: calculateTaskScore(),
           };
@@ -119,10 +121,11 @@ router.get('/', async (req: Request, res: Response) => {
           primaryTasks: undefined,
           secondaryTasks: undefined,
           tasks: populatedTasks,
+          displayPriority: undefined,
         };
       });
 
-      return mergedTaskGroups;
+      return mergedTaskGroups.sort((a, b) => (a.displayPriority !== b.displayPriority) ? (a.displayPriority - b.displayPriority) : a.name.localeCompare(b.name));
     });
 
     res.status(200).json(tasks);
@@ -173,6 +176,68 @@ router.post('/:action(select|deselect)/:taskId', async (req: Request, res: Respo
     },
     update: {
       favourite: favourite,
+    },
+    where: {
+      taskId_teamId: {
+        taskId: taskId,
+        teamId: teamId
+      }
+    }
+  });
+
+  res.status(201).end();
+});
+
+router.put('/:taskId', async (req: Request, res: Response) => {
+  const taskId = Number.parseInt(req.params.taskId);
+  const value = Number.parseInt(req.body.value);
+
+  if(isNaN(taskId)){
+    res.status(400).json({ message: "task id must be an integer" });
+    return;
+  }
+
+  if(isNaN(value) || value < 0){
+    res.status(400).json({ message: "body must be a non-negative integer" });
+    return;
+  }
+
+  if(!req.session.userId){
+      res.status(500).end();
+      return;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+        id: req.session.userId,
+    },
+    select: {
+        teamId: true,
+        teamAccepted: true,
+    }
+  });
+  if(!user){ // should never happen
+      res.status(500).end();
+      return;
+  }
+  if(user.teamId === null){
+    res.status(404).json({ message: "you have not yet registered your team" });
+    return;
+  }
+  if(!user.teamAccepted){
+      res.status(403).json({ message: "you don't have permission to view this team" });
+      return;
+  }
+  const teamId = user.teamId;
+
+  await prisma.taskJoint.upsert({
+    create: {
+      taskId: taskId,
+      teamId: teamId,
+      value: value,
+    },
+    update: {
+      value: value,
     },
     where: {
       taskId_teamId: {

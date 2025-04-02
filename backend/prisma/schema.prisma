@@ -140,6 +140,8 @@ model InitialTask {
   categorizationYear    CategorizationYear @relation(fields: [categorizationYearId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   joints      InitialTaskJoint[]
+
+  displayPriority Int @default(100)
 }
 
 model TaskJoint {
@@ -149,7 +151,7 @@ model TaskJoint {
   team        Team @relation(fields: [teamId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   favourite   Boolean @default(false)
-  value       Int?
+  value       Int @default(0)
 
   @@id([taskId, teamId])
   @@index([teamId])

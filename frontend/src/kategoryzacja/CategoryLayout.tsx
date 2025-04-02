@@ -11,7 +11,7 @@ import { UserInfo, Category as CategoryType } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask} : {userinfo: UserInfo | null; category: CategoryType; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void}) => {
+const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask, updateTask} : {userinfo: UserInfo | null; category: CategoryType; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void}) => {
     return (
       <>
         <h4 className="mb-3">{cat.name}</h4>
@@ -21,13 +21,25 @@ const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask} : {
               key={task.id}
               className="list-group-item list-group-item-action d-flex align-items-center"
             >
+              {task.type === "BOOLEAN" ?
               <input
                 type="checkbox"
-                className="form-check-input me-3 flex-shrink-0"
-                checked={task.value}
-                /*onChange={() => toggleTask(task.id)}*/
+                className="form-check-input flex-shrink-0"
+                checked={task.value > 0}
+                style={{ padding: '5px', marginLeft: '11px', marginRight: '27px', marginTop: '0px', height: '1.25em', width: '1.25em' }}
+                onChange={(e) => updateTask(task.id, e.target.checked ? '1' : '0')}
               />
-              <span className={`flex-grow-1 ${task.value ? 'text-muted text-decoration-line-through' : ''}`}>
+              :
+              <input
+                type="text"
+                className="form-control form-control-sm me-3 flex-shrink-0 text-center"
+                value={task.value}
+                placeholder="..."
+                style={{ width: '42px' }}
+                onChange={(e) => updateTask(task.id, e.target.value)}
+              />
+              }
+              <span className="flex-grow-1">
                 {task.name}
               </span>
               <button 

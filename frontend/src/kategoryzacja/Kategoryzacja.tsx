@@ -15,9 +15,10 @@ const API_ROOT = process.env.REACT_APP_API_URL;
 export interface Task {
   id: number;
   name: string;
-  value: boolean;
+  value: number;
   favourite: boolean;
-  category: string;
+  //category: string;
+  type: "BOOLEAN" | "LINEAR" | "LINEAR_REF" | "PARABOLIC_REF";
 }
 
 export interface Category {
@@ -115,14 +116,6 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
       ...tasklist
     ];
   
-    const toggleTask = (taskId: number) => {
-      renderableCategories.forEach(cat => {
-        cat.tasks.forEach(task => {
-          if(task.id === taskId) task.value = !task.value;
-        });
-      });
-    };
-  
     const toggleInitialTask = async (taskId: number, state: boolean) => {
       const newInitialTasklist = initialTasklist.map(task => {
         if (task.id === taskId) {
@@ -166,6 +159,34 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
 
       updateTasklist();
     };
+
+    const updateTask = async (taskId: number, value: string) => {
+      const numValue = (value === 'true' ? 1 : value === 'false' ? 0 : parseFloat(value));
+      if (isNaN(numValue) || numValue < 0) return;
+
+      const newTasklist = tasklist.map(cat => {
+        const tasks = cat.tasks.map(task => {
+          if (task.id === taskId) {
+            // Create a new task object to avoid mutating state directly
+            return { ...task, value: numValue };
+          }
+          return task;
+        });
+        return {
+          ...cat,
+          tasks: tasks,
+        };
+      });
+      setTasklist(newTasklist);
+
+      
+      try {
+        await axios.put(`${API_ROOT}/tasks/${taskId}`, JSON.stringify({value: numValue}), {headers: {"Content-Type": "application/json"}});
+      } catch (err: any) {
+      }
+
+      updateTasklist();
+    };
     
 
     return (
@@ -186,12 +207,12 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
               {/* Task List */}
               <div className="task-list">
                 {activeCategory === 0 ?
-                  <SummaryLayout userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask}/>
+                  <SummaryLayout userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask}/>
                   : activeCategory === -1 ?
                   <InitialTasksLayout userinfo={userinfo} tasks={initialTasklist} toggleInitialTask={toggleInitialTask}/>
                   :
                   renderableCategories.filter((cat) => cat.id === activeCategory).map((cat) =>
-                    <CategoryLayout userinfo={userinfo} category={cat} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask}/>
+                    <CategoryLayout userinfo={userinfo} category={cat} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask}/>
                   )
                 }
               </div>

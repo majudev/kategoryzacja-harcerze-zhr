@@ -19,8 +19,32 @@
   pointer-events: none;
 }
 
+.category-img-polowa {
+  background-size: contain;
+  background-image: url('../public/kategorie/polowa.png');
+  background-repeat: no-repeat;
+}
+
 .category-img-lesna {
   background-size: contain;
   background-image: url('../public/kategorie/lesna.png');
   background-repeat: no-repeat;
+}
+
+.category-img-puszczanska {
+  background-size: contain;
+  background-image: url('../public/kategorie/puszczanska.png');
+  background-repeat: no-repeat;
+}
+
+.img-src-polowa {
+  content: url('../public/kategorie/polowa.png');
+}
+
+.img-src-lesna {
+  content: url('../public/kategorie/lesna.png');
+}
+
+.img-src-puszczanska {
+  content: url('../public/kategorie/puszczanska.png');
 }

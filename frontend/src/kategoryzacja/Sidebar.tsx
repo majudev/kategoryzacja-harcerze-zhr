@@ -50,16 +50,31 @@ const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode
               style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
             >
               <div className="d-flex justify-content-between align-items-center">
-                <h6 className="mb-0">{cat.name}</h6>
+                <h6 className="mb-0">
+                  {cat.id === -1 && !initialLock && <i className="bi bi-check-circle-fill" style={{ color: 'green', marginRight: '8px' }}></i>}
+                  {cat.id > 0 && <img className="img-src-puszczanska" style={{ width: '20px', height: '20px', marginRight: '8px' }} />}
+                  {cat.name}
+                </h6>
                 <span className="badge bg-primary rounded-pill">
-                  {cat.tasks.filter(t => t.value).length}/{tasksLength}
+                  {cat.id === -1 ?
+                  <>{cat.tasks.filter(t => t.value).length}/{cat.tasks.length}</>
+                  :
+                  <>{cat.tasks.filter(t => t.value).length}/{tasksLength}</>
+                  }
+                  
                 </span>
               </div>
               <div className="progress mt-2" style={{height: '3px'}}>
+                {cat.id === -1 ?
+                <div 
+                  className="progress-bar bg-success" 
+                  style={{width: `${cat.tasks.length > 0 ? ((cat.tasks.filter(t => t.value).length / cat.tasks.length) * 100) : 0}%`}}
+                />
+                :
                 <div 
                   className="progress-bar bg-success" 
                   style={{width: `${tasksLength > 0 ? ((cat.tasks.filter(t => t.value).length / cat.tasks.length) * 100) : 0}%`}}
-                />
+                />}
               </div>
             </div>
           )})}
@@ -100,6 +115,7 @@ const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode
                     onClick={() => setActiveCategory(cat.id)}
                     style={{ whiteSpace: 'nowrap' }}
                   >
+                    {cat.id === -1 && !initialLock && <i className="bi bi-check-circle-fill" style={{ color: 'black', marginRight: '8px' }}></i>}
                     {cat.name}
                   </button>
                 ))}
