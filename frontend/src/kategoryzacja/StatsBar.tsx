@@ -10,8 +10,11 @@ const API_ROOT = process.env.REACT_APP_API_URL;
 
 const StatsBar = ({userinfo, categories, myTasksMode} : {userinfo: UserInfo | null; categories: Array<Category>; myTasksMode: boolean}) => {
     const allTasks = categories.flatMap(cat => cat.tasks);
-    const completedTasks = allTasks.filter(t => t.checked).length;
-    const starredTasks = allTasks.filter(t => t.favourite);
+    const uniqueTasks = Array.from(
+      new Map(allTasks.map(task => [task.id, task])).values()
+    );
+    const completedTasks = uniqueTasks.filter(t => t.checked).length;
+    const starredTasks = uniqueTasks.filter(t => t.favourite);
 
     return (
       <div className="row g-4 mb-4">
@@ -33,7 +36,7 @@ const StatsBar = ({userinfo, categories, myTasksMode} : {userinfo: UserInfo | nu
               <div className="d-flex align-items-center">
                 <div className="display-4 fw-bold">{completedTasks}</div>
                 <span className="ms-2 text-success">
-                  ({Math.round((completedTasks / allTasks.length) * 100)}%)
+                  ({Math.round((completedTasks / starredTasks.length) * 100)}%)
                 </span>
               </div>
             </div>
@@ -58,11 +61,11 @@ const StatsBar = ({userinfo, categories, myTasksMode} : {userinfo: UserInfo | nu
               <div className="progress" style={{height: '8px'}}>
                 <div 
                   className="progress-bar bg-success" 
-                  style={{width: `${(completedTasks / allTasks.length) * 100}%`}}
+                  style={{width: `${(completedTasks / starredTasks.length) * 100}%`}}
                 />
               </div>
               <span className="text-end text-success">
-                {Math.round((completedTasks / allTasks.length) * 100)}%
+                {Math.round((completedTasks / starredTasks.length) * 100)}%
               </span>
               <p className="fst-italic mt-2 mb-0">Do boju!</p>
             </div>
