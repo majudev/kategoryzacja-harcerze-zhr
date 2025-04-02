@@ -24,10 +24,10 @@ const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask} : {
               <input
                 type="checkbox"
                 className="form-check-input me-3 flex-shrink-0"
-                checked={task.checked}
+                checked={task.value}
                 /*onChange={() => toggleTask(task.id)}*/
               />
-              <span className={`flex-grow-1 ${task.checked ? 'text-muted text-decoration-line-through' : ''}`}>
+              <span className={`flex-grow-1 ${task.value ? 'text-muted text-decoration-line-through' : ''}`}>
                 {task.name}
               </span>
               <button 

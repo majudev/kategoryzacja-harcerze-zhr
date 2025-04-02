@@ -8,21 +8,21 @@ import { UserInfo, Category, Task } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const Sidebar = ({type, userinfo, renderableCategories, myTasksMode, setMyTasksMode, activeCategory, setActiveCategory} : {type: "desktop"|"mobile"; userinfo: UserInfo | null; renderableCategories: Array<Category>; myTasksMode: boolean; setMyTasksMode: React.Dispatch<React.SetStateAction<boolean>>; activeCategory: number; setActiveCategory: React.Dispatch<React.SetStateAction<number>>}) => {
+const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode, setMyTasksMode, activeCategory, setActiveCategory} : {type: "desktop"|"mobile"; userinfo: UserInfo | null; renderableCategories: Array<Category>; initialLock: boolean; myTasksMode: boolean; setMyTasksMode: React.Dispatch<React.SetStateAction<boolean>>; activeCategory: number; setActiveCategory: React.Dispatch<React.SetStateAction<number>>}) => {
     // Desktop sidebar
     if(type === "desktop") return (
       <div className="bg-light border-end d-none d-lg-flex flex-column flex-shrink-0" style={{ width: '300px' }}>
         <div className="p-3 border-bottom">
           <h4 className="mb-3">Arkusz śródroczny</h4>
           <ul className="nav nav-underline">
-            <li className="nav-item">
+            {!initialLock && <li className="nav-item">
               <button
                 className={`nav-link ${myTasksMode ? 'active' : 'text-muted'}`}
                 onClick={() => setMyTasksMode(true)}
               >
                 Moje zadania
               </button>
-            </li>
+            </li>}
             <li className="nav-item">
               <button
                 className={`nav-link ${!myTasksMode ? 'active' : 'text-muted'}`}
@@ -35,9 +35,12 @@ const Sidebar = ({type, userinfo, renderableCategories, myTasksMode, setMyTasksM
         </div>
 
         <div className="flex-grow-1 overflow-auto">
-          {renderableCategories.map(cat => {
-            const allTasksLength = cat.tasks.length;
-            const myTasksLength = cat.tasks.filter(t => t.favourite).length;
+          {(initialLock ? renderableCategories.filter(cat => cat.id === -1) : renderableCategories).map(cat => {
+            const uniqueTasks = Array.from(
+              new Map(cat.tasks.map(task => [task.id, task])).values()
+            );
+            const allTasksLength = uniqueTasks.length;
+            const myTasksLength = uniqueTasks.filter(t => t.favourite).length;
             const tasksLength = myTasksMode ? myTasksLength : allTasksLength;
             return (
             <div 
@@ -49,13 +52,13 @@ const Sidebar = ({type, userinfo, renderableCategories, myTasksMode, setMyTasksM
               <div className="d-flex justify-content-between align-items-center">
                 <h6 className="mb-0">{cat.name}</h6>
                 <span className="badge bg-primary rounded-pill">
-                  {cat.tasks.filter(t => t.checked).length}/{tasksLength}
+                  {cat.tasks.filter(t => t.value).length}/{tasksLength}
                 </span>
               </div>
               <div className="progress mt-2" style={{height: '3px'}}>
                 <div 
                   className="progress-bar bg-success" 
-                  style={{width: `${tasksLength > 0 ? ((cat.tasks.filter(t => t.checked).length / cat.tasks.length) * 100) : 0}%`}}
+                  style={{width: `${tasksLength > 0 ? ((cat.tasks.filter(t => t.value).length / cat.tasks.length) * 100) : 0}%`}}
                 />
               </div>
             </div>
@@ -70,14 +73,14 @@ const Sidebar = ({type, userinfo, renderableCategories, myTasksMode, setMyTasksM
               <h4 className="mb-3">Arkusz śródroczny</h4>
               <div className="d-flex justify-content-between mb-3">
                 <ul className="nav nav-underline">
-                  <li className="nav-item">
+                  {!initialLock &&<li className="nav-item">
                     <button
                       className={`nav-link ${myTasksMode ? 'active' : 'text-muted'}`}
                       onClick={() => setMyTasksMode(true)}
                     >
                       Moje zadania
                     </button>
-                  </li>
+                  </li>}
                   <li className="nav-item">
                     <button
                       className={`nav-link ${!myTasksMode ? 'active' : 'text-muted'}`}
@@ -90,7 +93,7 @@ const Sidebar = ({type, userinfo, renderableCategories, myTasksMode, setMyTasksM
               </div>
               
               <div className="d-flex overflow-auto mb-3">
-                {renderableCategories.map(cat => (
+                {(initialLock ? renderableCategories.filter(cat => cat.id === -1) : renderableCategories).map(cat => (
                   <button
                     key={cat.id}
                     className={`btn btn-outline-primary me-2 ${activeCategory === cat.id ? 'active' : ''}`}

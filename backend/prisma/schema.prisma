@@ -58,6 +58,7 @@ model Team {
 
   owners      User[]
 
+  initialTasks InitialTaskJoint[]
   tasks       TaskJoint[]
 
   @@index([shadow])
@@ -85,6 +86,7 @@ model CategorizationYear {
   name        String
   createdAt   DateTime @default(now())
 
+  initialTasks InitialTask[]
   taskGroup   CategorizationTaskGroup[]
 }
 
@@ -97,6 +99,8 @@ model CategorizationTaskGroup {
 
   primaryTasks  CategorizationTask[] @relation("ctasks_group_primary")
   secondaryTasks  CategorizationTask[] @relation("ctasks_group_secondary")
+
+  displayPriority Int @default(100)
 }
 
 enum CategorizationTaskType {
@@ -129,6 +133,15 @@ model CategorizationTask {
   @@index([secondaryGroupId])
 }
 
+model InitialTask {
+  id          Int @id @default(autoincrement())
+  name        String
+  categorizationYearId  Int
+  categorizationYear    CategorizationYear @relation(fields: [categorizationYearId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  joints      InitialTaskJoint[]
+}
+
 model TaskJoint {
   taskId      Int
   task        CategorizationTask @relation(fields: [taskId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -141,5 +154,18 @@ model TaskJoint {
   @@id([taskId, teamId])
   @@index([teamId])
   //@@index([teamId, favourite])
+  //@@index([teamId, value])
+}
+
+model InitialTaskJoint {
+  taskId      Int
+  task        InitialTask @relation(fields: [taskId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  teamId      Int
+  team        Team @relation(fields: [teamId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  value       Boolean @default(false)
+
+  @@id([taskId, teamId])
+  @@index([teamId])
   //@@index([teamId, value])
 }

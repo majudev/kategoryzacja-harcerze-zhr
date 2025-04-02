@@ -13,7 +13,7 @@ const StatsBar = ({userinfo, categories, myTasksMode} : {userinfo: UserInfo | nu
     const uniqueTasks = Array.from(
       new Map(allTasks.map(task => [task.id, task])).values()
     );
-    const completedTasks = uniqueTasks.filter(t => t.checked).length;
+    const completedTasks = uniqueTasks.filter(t => t.value).length;
     const starredTasks = uniqueTasks.filter(t => t.favourite);
 
     return (
@@ -35,9 +35,9 @@ const StatsBar = ({userinfo, categories, myTasksMode} : {userinfo: UserInfo | nu
               <h5 className="text-muted mb-3">Wykonane</h5>
               <div className="d-flex align-items-center">
                 <div className="display-4 fw-bold">{completedTasks}</div>
-                <span className="ms-2 text-success">
+                {starredTasks.length > 0 && <span className="ms-2 text-success">
                   ({Math.round((completedTasks / starredTasks.length) * 100)}%)
-                </span>
+                </span>}
               </div>
             </div>
           </div>

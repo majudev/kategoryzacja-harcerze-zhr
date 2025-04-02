@@ -11,6 +11,6 @@ router.use('/auth', authRouter);
 router.use('/user', userRouter);
 router.use('/districts', districtsRouter);
 router.use('/teams', teamsRouter);
-router.use('/tasks', tasksRouter)
+router.use('/tasks', tasksRouter);
 
 export default router;

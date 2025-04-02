@@ -24,7 +24,7 @@ const SummaryLayout = ({userinfo, categories, myTasksMode, toggleMyTask} : {user
                 <div className="card-header d-flex justify-content-between align-items-center">
                   <h5 className="mb-0">{category.name}</h5>
                   <small>
-                    {filteredTasks.filter((t) => t.checked).length}/{filteredTasks.length}
+                    {filteredTasks.filter((t) => t.value).length}/{filteredTasks.length}
                   </small>
                 </div>
                 <div className="card-body">
@@ -34,11 +34,11 @@ const SummaryLayout = ({userinfo, categories, myTasksMode, toggleMyTask} : {user
                         <input
                           type="checkbox"
                           className="form-check-input me-3"
-                          checked={task.checked}
+                          checked={task.value}
                           /*onChange={() => toggleTask(task.id)}*/
                         />
                         <span
-                          className={`flex-grow-1 ${task.checked ? 'text-muted text-decoration-line-through' : ''}`}
+                          className={`flex-grow-1 ${task.value ? 'text-muted text-decoration-line-through' : ''}`}
                         >
                           {task.name}
                         </span>
