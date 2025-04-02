@@ -44,7 +44,7 @@ const StatsBar = ({userinfo, renderableCategories, myTasksMode} : {userinfo: Use
           <div className="card shadow-sm border-0 h-100">
             <div className="card-body">
               <h5 className="text-muted mb-3">Kategoria</h5>
-              <div className="display-4" style={{backgroundSize: "contain", backgroundImage: "url('/kategorie/lesna.png')", backgroundRepeat: "no-repeat", color: "rgba(0, 0, 0, 0)"}}>
+              <div className="display-4 category-img-lesna" style={{color: "rgba(0, 0, 0, 0)"}}>
                 c
               </div>
             </div>
@@ -61,6 +61,10 @@ const StatsBar = ({userinfo, renderableCategories, myTasksMode} : {userinfo: Use
                   style={{width: `${(completedTasks / allTasks.length) * 100}%`}}
                 />
               </div>
+              <span className="text-end text-success">
+                {Math.round((completedTasks / allTasks.length) * 100)}%
+              </span>
+              <p className="fst-italic mt-2 mb-0">Do boju!</p>
             </div>
           </div>
         </div>
