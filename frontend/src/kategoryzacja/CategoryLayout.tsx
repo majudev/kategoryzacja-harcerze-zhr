@@ -12,6 +12,10 @@ import { UserInfo, Category as CategoryType } from "./Kategoryzacja";
 const API_ROOT = process.env.REACT_APP_API_URL;
 
 const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask, updateTask} : {userinfo: UserInfo | null; category: CategoryType; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void}) => {
+  const collectedSplitPoints = cat.tasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.points : t.secondaryGroupId === cat.id ? t.secondaryPoints as number : t.primaryPoints as number), 0);
+  const maxSplitPoints = cat.tasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === cat.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
+  const maxFilteredSplitPoints = cat.tasks.filter(t => t.favourite).reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === cat.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
+
     return (
       <div className="container-fluid row m-0 p-0">
         <div className="col-12 col-md-8 p-0">
@@ -62,8 +66,30 @@ const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask, upd
               <h5 className="mb-0 text-center">Twój progress</h5>
             </div>
             <div className="card-body">
-              <p>Zdobyłeś na razie <b>10</b> na <b>35 możliwych punktów</b>.</p>
-              <p>Twój aktualny token to: <b>token leśny</b></p>
+              <p>Oznaczyłeś do zrobienia <b>{cat.tasks.filter(t => t.favourite).length}</b> zadań.</p>
+              <p>Gdybyś wykonał je wszystkie, mógłbyś mieć {maxFilteredSplitPoints} punktów i zdobyć token <img className={maxFilteredSplitPoints >= cat.puszczanskaThreshold ? "img-src-puszczanska" : maxFilteredSplitPoints >= cat.lesnaThreshold ? "img-src-lesna" : "img-src-polowa"} style={{ width: '20px', height: '20px' }} />.</p>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Punkty</th>
+                    <th scope="col" className="text-center">Token</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">0-{cat.lesnaThreshold-0.01}</th>
+                    <td className="text-center"><img className="img-src-polowa" style={{ width: '40px', height: '40px' }} /></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">{cat.lesnaThreshold}-{cat.puszczanskaThreshold-0.01}</th>
+                    <td className="text-center"><img className="img-src-lesna" style={{ width: '40px', height: '40px' }} /></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">{cat.puszczanskaThreshold}-{maxSplitPoints}</th>
+                    <td className="text-center"><img className="img-src-puszczanska" style={{ width: '40px', height: '40px' }} /></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

@@ -56,7 +56,7 @@ const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode
               <div className="d-flex justify-content-between align-items-center">
                 <h6 className="mb-0">
                   {cat.id === -1 && !initialLock && <i className="bi bi-check-circle-fill" style={{ color: 'green', marginRight: '8px' }}></i>}
-                  {cat.id > 0 && <img className={collectedSplitPoints > cat.puszczanskaThreshold ? "img-src-puszczanska" : collectedSplitPoints > cat.lesnaThreshold ? "img-src-lesna" : "img-src-polowa"} style={{ width: '20px', height: '20px', marginRight: '8px' }} />}
+                  {cat.id > 0 && <img className={collectedSplitPoints >= cat.puszczanskaThreshold ? "img-src-puszczanska" : collectedSplitPoints >= cat.lesnaThreshold ? "img-src-lesna" : "img-src-polowa"} style={{ width: '20px', height: '20px', marginRight: '8px' }} />}
                   {cat.name}
                 </h6>
                 <span className="badge bg-primary rounded-pill">
