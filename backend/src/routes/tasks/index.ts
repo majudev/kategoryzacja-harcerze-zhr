@@ -47,6 +47,9 @@ router.get('/', async (req: Request, res: Response) => {
           id: true,
           name: true,
 
+          lesnaThreshold: true,
+          puszczanskaThreshold: true,
+
           primaryTasks: {
             select: {
               id: true,
@@ -57,6 +60,7 @@ router.get('/', async (req: Request, res: Response) => {
               split: true,
 
               type: true,
+              maxPoints: true,
               multiplier: true,
               refValId: true,
             }
@@ -71,6 +75,7 @@ router.get('/', async (req: Request, res: Response) => {
               split: true,
 
               type: true,
+              maxPoints: true,
               multiplier: true,
               refValId: true,
             }
@@ -108,11 +113,38 @@ router.get('/', async (req: Request, res: Response) => {
         const populatedTasks = tasks.map((task) => {
           const joint = finishedTasks.find((joint) => {return joint.taskId === task.id});
 
+          let primaryGroupName = undefined;
+          let secondaryGroupName = undefined;
+          if(task.secondaryGroupId !== null){
+            primaryGroupName = taskGroups.find(gr => gr.id === task.primaryGroupId)?.name;
+            secondaryGroupName = taskGroups.find(gr => gr.id === task.secondaryGroupId)?.name;
+          }
+
+
+          const rawScore = calculateTaskScore(task.type, (joint !== undefined ? joint.value : 0), task.maxPoints, task.multiplier);
+          let primaryMaxPoints = undefined;
+          let primaryPoints = undefined;
+          let secondaryMaxPoints = undefined;
+          let secondaryPoints = undefined;
+          if(task.secondaryGroupId !== null){
+            primaryPoints = rawScore * task.split;
+            secondaryPoints = rawScore * (1-task.split);
+            primaryMaxPoints = task.maxPoints * task.split;
+            secondaryMaxPoints = task.maxPoints * (1-task.split);
+          }
+
           return {
             ...task,
             value: (joint !== undefined ? joint.value : 0),
             favourite: (joint !== undefined ? joint.favourite : false),
-            points: calculateTaskScore(),
+            points: rawScore,
+
+            primaryGroupName,
+            secondaryGroupName,
+            primaryPoints,
+            secondaryPoints,
+            primaryMaxPoints,
+            secondaryMaxPoints,
           };
         });
 

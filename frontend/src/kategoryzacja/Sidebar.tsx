@@ -39,9 +39,13 @@ const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode
             const uniqueTasks = Array.from(
               new Map(cat.tasks.map(task => [task.id, task])).values()
             );
-            const allTasksLength = uniqueTasks.length;
-            const myTasksLength = uniqueTasks.filter(t => t.favourite).length;
-            const tasksLength = myTasksMode ? myTasksLength : allTasksLength;
+            const allTasks = uniqueTasks;
+            const myTasks = uniqueTasks.filter(t => t.favourite);
+            const tasks = myTasksMode ? myTasks : allTasks;
+
+            const collectedSplitPoints = cat.tasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.points : t.secondaryGroupId === cat.id ? t.secondaryPoints as number : t.primaryPoints as number), 0);
+            const maxSplitPoints = cat.tasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === cat.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
+            const maxFilteredSplitPoints = cat.tasks.filter(t => t.favourite).reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === cat.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
             return (
             <div 
               key={cat.id}
@@ -52,16 +56,17 @@ const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode
               <div className="d-flex justify-content-between align-items-center">
                 <h6 className="mb-0">
                   {cat.id === -1 && !initialLock && <i className="bi bi-check-circle-fill" style={{ color: 'green', marginRight: '8px' }}></i>}
-                  {cat.id > 0 && <img className="img-src-puszczanska" style={{ width: '20px', height: '20px', marginRight: '8px' }} />}
+                  {cat.id > 0 && <img className={collectedSplitPoints > cat.puszczanskaThreshold ? "img-src-puszczanska" : collectedSplitPoints > cat.lesnaThreshold ? "img-src-lesna" : "img-src-polowa"} style={{ width: '20px', height: '20px', marginRight: '8px' }} />}
                   {cat.name}
                 </h6>
                 <span className="badge bg-primary rounded-pill">
                   {cat.id === -1 ?
                   <>{cat.tasks.filter(t => t.value).length}/{cat.tasks.length}</>
+                  : cat.id === 0 ?
+                  <>{allTasks.reduce((prev, t) => prev + t.points, 0)}/{tasks.reduce((prev, t) => prev + t.maxPoints, 0)}</>
                   :
-                  <>{cat.tasks.filter(t => t.value).length}/{tasksLength}</>
+                  <>{collectedSplitPoints}/{maxFilteredSplitPoints}</>
                   }
-                  
                 </span>
               </div>
               <div className="progress mt-2" style={{height: '3px'}}>
@@ -70,11 +75,26 @@ const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode
                   className="progress-bar bg-success" 
                   style={{width: `${cat.tasks.length > 0 ? ((cat.tasks.filter(t => t.value).length / cat.tasks.length) * 100) : 0}%`}}
                 />
-                :
+                : cat.id === 0 ?
                 <div 
                   className="progress-bar bg-success" 
-                  style={{width: `${tasksLength > 0 ? ((cat.tasks.filter(t => t.value).length / cat.tasks.length) * 100) : 0}%`}}
-                />}
+                  style={{width: `${tasks.reduce((prev, t) => prev + t.maxPoints, 0) > 0 ? ((allTasks.reduce((prev, t) => prev + t.points, 0) / tasks.reduce((prev, t) => prev + t.maxPoints, 0)) * 100) : 0}%`}}
+                />
+                :
+                <>
+                  <div 
+                    className="progress-bar bg-primary" 
+                    style={{width: `${maxSplitPoints > 0 ? Math.min((collectedSplitPoints / maxSplitPoints), (cat.lesnaThreshold / maxSplitPoints))*100 : 0}%`}}
+                  />
+                  <div 
+                    className="progress-bar bg-success" 
+                    style={{width: `${maxSplitPoints > 0 ? Math.min(((collectedSplitPoints - cat.lesnaThreshold) / maxSplitPoints), ((cat.puszczanskaThreshold - cat.lesnaThreshold) / maxSplitPoints))*100 : 0}%`}}
+                  />
+                  <div 
+                    className="progress-bar bg-danger" 
+                    style={{width: `${maxSplitPoints > 0 ? Math.min(((collectedSplitPoints - cat.puszczanskaThreshold) / maxSplitPoints), ((maxSplitPoints - cat.puszczanskaThreshold) / maxSplitPoints))*100 : 0}%`}}
+                  />
+                </>}
               </div>
             </div>
           )})}

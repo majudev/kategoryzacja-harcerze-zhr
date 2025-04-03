@@ -14,7 +14,7 @@ const API_ROOT = process.env.REACT_APP_API_URL;
 const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask, updateTask} : {userinfo: UserInfo | null; category: CategoryType; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void}) => {
     return (
       <div className="container-fluid row m-0 p-0">
-        <div className="col-12 col-md-6 p-0">
+        <div className="col-12 col-md-8 p-0">
           <h4 className="mb-3">{cat.name}</h4>
           <div className="list-group">
             {(myTasksMode ? cat.tasks.filter(t => t.favourite) : cat.tasks).map(task => (
@@ -40,8 +40,11 @@ const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask, upd
                   onChange={(e) => updateTask(task.id, e.target.value)}
                 />
                 }
-                <span className="flex-grow-1">
-                  {task.name}
+                <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
+                  {task.name} - <b>{task.secondaryGroupId === null ? task.points : task.secondaryGroupId === cat.id ? task.secondaryPoints : task.primaryPoints}/{task.secondaryGroupId === null ? task.maxPoints : task.secondaryGroupId === cat.id ? task.secondaryMaxPoints : task.primaryMaxPoints} pkt</b>
+                  {task.secondaryGroupId !== null && <><br/>
+                  <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Zadanie dzielone: max {task.primaryMaxPoints} pkt do {task.primaryGroupName}, osobne max {task.secondaryMaxPoints} pkt do {task.secondaryGroupName}</small>
+                  </>}
                 </span>
                 <button 
                   className="btn btn-link p-0 ms-2"
@@ -51,6 +54,17 @@ const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask, upd
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+        <div className="col-12 col-md-4 ps-4 pe-0">
+          <div className="card h-100 shadow-sm">
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <h5 className="mb-0 text-center">Twój progress</h5>
+            </div>
+            <div className="card-body">
+              <p>Zdobyłeś na razie <b>10</b> na <b>35 możliwych punktów</b>.</p>
+              <p>Twój aktualny token to: <b>token leśny</b></p>
+            </div>
           </div>
         </div>
       </div>

@@ -17,13 +17,32 @@ export interface Task {
   name: string;
   value: number;
   favourite: boolean;
-  //category: string;
+  
+  primaryGroupId: number;
+  secondaryGroupId: number|null;
+  split: number;
+
   type: "BOOLEAN" | "LINEAR" | "LINEAR_REF" | "PARABOLIC_REF";
+  maxPoints: number;
+  multiplier: number|null;
+
+  points: number;
+
+  primaryGroupName: string | undefined;
+  secondaryGroupName: string | undefined;
+  primaryPoints: number | undefined;
+  secondaryPoints: number | undefined;
+  primaryMaxPoints: number | undefined;
+  secondaryMaxPoints: number | undefined;
 }
 
 export interface Category {
   id: number;
   name: string;
+
+  lesnaThreshold: number;
+  puszczanskaThreshold: number;
+
   tasks: Task[];
 }
 
@@ -68,8 +87,6 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
         const res = await axios.get(`${API_ROOT}/tasks/initial`);
         setInitialTasklist(res.data);
         const tl = res.data as Array<Task>;
-        console.log('TL.reduce: ' + tl.reduce((prev, x) => (x.value ? prev+1 : prev), 0));
-        console.log('TL.length: ' + tl.length);
         if(tl.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < tl.length){
           setActiveCategory(-1);
         }
@@ -86,32 +103,23 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
         setTasklist([]);
       }
     };
-
-    //const updateValue = ;
-
-    /// TODO: insert some real categories in here
-    /*const categories: Category[] = Array.from({length: 20}, (_, i) => ({
-      id: `cat-${i+1}`,
-      title: `Category ${i+1}`,
-      tasks: Array.from({length: 5}, (_, j) => ({
-        id: `task-${i+1}-${j+1}`,
-        title: `Task ${j+1} for Category ${i+1}`,
-        checked: Math.random() > 0.5,
-        starred: Math.random() > 0.7,
-        category: `Category ${i+1}`
-      }))
-    }));*/
   
     const renderableCategories = [
       {
         id: -1,
         name: 'Wymagania wstępne',
         tasks: initialTasklist,
+
+        lesnaThreshold: -1,
+        puszczanskaThreshold: -1,
       },
       {
         id: 0,
         name: 'Podsumowanie',
-        tasks: tasklist.flatMap(cat => cat.tasks)
+        tasks: tasklist.flatMap(cat => cat.tasks),
+
+        lesnaThreshold: -1,
+        puszczanskaThreshold: -1,
       },
       ...tasklist
     ];

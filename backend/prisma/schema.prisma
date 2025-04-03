@@ -100,6 +100,9 @@ model CategorizationTaskGroup {
   primaryTasks  CategorizationTask[] @relation("ctasks_group_primary")
   secondaryTasks  CategorizationTask[] @relation("ctasks_group_secondary")
 
+  lesnaThreshold        Int
+  puszczanskaThreshold  Int
+
   displayPriority Int @default(100)
 }
 
@@ -121,6 +124,7 @@ model CategorizationTask {
   split               Float @default(0.5)
 
   type        CategorizationTaskType
+  maxPoints   Int
   multiplier  Int?
   //formula     String?
   refValId    Int?
