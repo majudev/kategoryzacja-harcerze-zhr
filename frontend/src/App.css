@@ -48,3 +48,14 @@
 .img-src-puszczanska {
   content: url('../public/kategorie/puszczanska.png');
 }
+
+.progress-bar-marker {
+  position: absolute;
+  top: -4px;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--bs-progress-bg);
+  transition: 0.6s ease;
+}
