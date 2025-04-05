@@ -63,6 +63,8 @@ router.get('/', async (req: Request, res: Response) => {
               maxPoints: true,
               multiplier: true,
               refValId: true,
+
+              obligatory: true,
             }
           },
           secondaryTasks: {
@@ -78,6 +80,8 @@ router.get('/', async (req: Request, res: Response) => {
               maxPoints: true,
               multiplier: true,
               refValId: true,
+
+              obligatory: true,
             }
           },
 
@@ -136,7 +140,11 @@ router.get('/', async (req: Request, res: Response) => {
           return {
             ...task,
             value: (joint !== undefined ? joint.value : 0),
-            favourite: (joint !== undefined ? joint.favourite : false),
+            // Description of the spaghetti below:
+            // if TASK is obligatory, ignore JOINT's favourite value and return
+            // JOINT's value of favourite. If JOINT's value of favourite is unset,
+            // return false (that is the default).
+            favourite: (joint !== undefined ? (joint.favourite || task.obligatory) : task.obligatory),
             points: rawScore,
 
             primaryGroupName,

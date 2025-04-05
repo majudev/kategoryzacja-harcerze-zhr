@@ -52,7 +52,7 @@ const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask, upd
                 </span>
                 <button 
                   className="btn btn-link p-0 ms-2"
-                  onClick={() => toggleMyTask(task.id, !task.favourite)}
+                  onClick={() => {if(!task.obligatory) toggleMyTask(task.id, !task.favourite)}}
                 >
                   <i className={`bi bi-star${task.favourite ? '-fill' : ''} ${task.favourite ? 'text-warning' : 'text-secondary'}`} />
                 </button>

@@ -56,7 +56,7 @@ const SummaryLayout = ({userinfo, categories, myTasksMode, toggleMyTask, updateT
                         </span>
                         <i
                           className={`bi bi-star${task.favourite ? '-fill' : ''} text-warning fs-5`}
-                          onClick={() => toggleMyTask(task.id, !task.favourite)}
+                          onClick={() => {if(!task.obligatory) toggleMyTask(task.id, !task.favourite)}}
                           style={{ cursor: 'pointer' }}
                         />
                       </li>

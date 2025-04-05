@@ -26,6 +26,8 @@ export interface Task {
   maxPoints: number;
   multiplier: number|null;
 
+  obligatory: boolean;
+
   points: number;
 
   primaryGroupName: string | undefined;

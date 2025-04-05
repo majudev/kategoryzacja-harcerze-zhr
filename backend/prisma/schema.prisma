@@ -131,6 +131,8 @@ model CategorizationTask {
   refVal      CategorizationTask? @relation("ctask_refval", fields: [refValId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   refVals     CategorizationTask[] @relation("ctask_refval")
 
+  obligatory  Boolean @default(false)
+
   joints      TaskJoint[]
 
   @@index([primaryGroupId])
