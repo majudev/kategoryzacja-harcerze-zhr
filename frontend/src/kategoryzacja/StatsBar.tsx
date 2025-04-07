@@ -67,7 +67,7 @@ const StatsBar = ({userinfo, categorizationDetails, categories, myTasksMode} : {
         <div className="col-12 col-sm-6 col-xl-3">
           <div className="card shadow-sm border-0 h-100">
             <div className="card-body">
-              <h5 className="text-muted mb-3">Następna kategoria</h5>
+              {/*<h5 className="text-muted mb-3">Następna kategoria</h5>*/}
               <div className="text-justify">
                 Aby uzyskać kategorię <img className={nextCategory === 'PUSZCZANSKA' ? "img-src-puszczanska" : nextCategory === 'LESNA' ? "img-src-lesna" : "img-src-polowa"} style={{ width: '20px', height: '20px' }} />,
                 musisz zdobyć jeszcze:
@@ -80,8 +80,10 @@ const StatsBar = ({userinfo, categorizationDetails, categories, myTasksMode} : {
                     <td className="pe-2">{missingEffective}x</td>
                     <td>
                       <img className="img-src-lesna" style={{ width: '30px', height: '30px' }} />
-                      lub
-                      <img className="img-src-puszczanska" style={{ width: '30px', height: '30px' }} />
+                      <small className="ms-2">
+                        (lub
+                        <img className="img-src-puszczanska ms-1" style={{ width: '14px', height: '14px' }} />)
+                      </small>
                     </td>
                   </tr>}
                 </table>
