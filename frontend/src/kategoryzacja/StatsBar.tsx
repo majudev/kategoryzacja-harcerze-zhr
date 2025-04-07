@@ -24,9 +24,9 @@ const StatsBar = ({userinfo, categorizationDetails, categories, myTasksMode} : {
     let category = 'POLOWA';
     const effectiveLesnaTokens = lesna + puszczanska;
     if(categorizationDetails){
-      if(puszczanska >= categorizationDetails.puszczanskaPuszczanskieThreshold && effectiveLesnaTokens >= categorizationDetails.puszczanskaLesneThreshold) {
+      if(puszczanska >= categorizationDetails.puszczanskaPuszczanskieThreshold && effectiveLesnaTokens - categorizationDetails.lesnaPuszczanskieThreshold >= categorizationDetails.puszczanskaLesneThreshold) {
         category = 'PUSZCZANSKA';
-      }else if(puszczanska >= categorizationDetails.lesnaPuszczanskieThreshold && effectiveLesnaTokens >= categorizationDetails.lesnaLesneThreshold){
+      }else if(puszczanska >= categorizationDetails.lesnaPuszczanskieThreshold && effectiveLesnaTokens - categorizationDetails.lesnaPuszczanskieThreshold >= categorizationDetails.lesnaLesneThreshold){
         category = 'LESNA';
       }
     }
@@ -48,7 +48,7 @@ const StatsBar = ({userinfo, categorizationDetails, categories, myTasksMode} : {
     }
       
     const missingPuszczanska = Math.max(0, requiredPuszczanska - puszczanska);
-    const effectiveAfterPuszczanska = effectiveLesnaTokens + missingPuszczanska;
+    const effectiveAfterPuszczanska = Math.max(0, effectiveLesnaTokens - missingPuszczanska);
     const missingEffective = Math.max(0, requiredEffective - effectiveAfterPuszczanska);
 
     return (

@@ -41,14 +41,14 @@ export const getCategory = async (teamId: number, polowa: number, lesna: number,
   // First check for PUSZCZANSKA: both the effective count and the specific puszczanska threshold must be met.
   if (
     puszczanska >= puszczanskaPuszczanskieThreshold &&
-    effectiveLesnaTokens >= puszczanskaLesneThreshold
+    effectiveLesnaTokens - puszczanskaPuszczanskieThreshold >= puszczanskaLesneThreshold
   ) {
     category = 'PUSZCZANSKA';
   }
   // Next, check for LESNA category.
   else if (
     puszczanska >= lesnaPuszczanskieThreshold &&
-    effectiveLesnaTokens >= lesnaLesneThreshold
+    effectiveLesnaTokens - lesnaPuszczanskieThreshold >= lesnaLesneThreshold
   ) {
     category = 'LESNA';
   }
@@ -71,16 +71,10 @@ export const getCategory = async (teamId: number, polowa: number, lesna: number,
   const missingPuszczanska = Math.max(0, requiredPuszczanska - puszczanska);
   
   // Adding missing PUSZCZANSKA tokens increases the effective count.
-  const effectiveAfterPuszczanska = effectiveLesnaTokens + missingPuszczanska;
+  const effectiveAfterPuszczanska = Math.max(0, effectiveLesnaTokens - missingPuszczanska);
   
   // Determine any remaining shortage in the effective token count.
   const missingEffective = Math.max(0, requiredEffective - effectiveAfterPuszczanska);
-  
-  // The final answer is a breakdown:
-  // - You must obtain `missingPuszczanska` additional PUSZCZANSKA tokens
-  //   (if any shortage exists), and
-  // - If there’s still an effective shortage after that,
-  //   you must get `missingEffective` additional LESNA tokens.
 
   return {
     category,
