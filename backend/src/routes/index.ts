@@ -4,6 +4,7 @@ import userRouter from './user/index';
 import districtsRouter from './districts/index';
 import teamsRouter from './teams/index';
 import tasksRouter from './tasks/index';
+import categorizationRouter from './categorization/index';
 
 const router = Router();
 
@@ -12,5 +13,6 @@ router.use('/user', userRouter);
 router.use('/districts', districtsRouter);
 router.use('/teams', teamsRouter);
 router.use('/tasks', tasksRouter);
+router.use('/categorization', categorizationRouter);
 
 export default router;

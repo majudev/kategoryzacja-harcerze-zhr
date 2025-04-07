@@ -4,11 +4,11 @@ import { Link, useNavigate } from "react-router-dom";
 import translate from "../translator";
 import NavbarOverlay from "../common/NavbarOverlay";
 import 'bootstrap/js/dist/tab';
-import { Category, UserInfo } from "./Kategoryzacja";
+import { CategorizationDetails, Category, UserInfo } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const StatsBar = ({userinfo, categories, myTasksMode} : {userinfo: UserInfo | null; categories: Array<Category>; myTasksMode: boolean}) => {
+const StatsBar = ({userinfo, categorizationDetails, categories, myTasksMode} : {categorizationDetails: CategorizationDetails|undefined; userinfo: UserInfo | null; categories: Array<Category>; myTasksMode: boolean}) => {
     const allTasks = categories.flatMap(cat => cat.tasks);
     const uniqueTasks = Array.from(
       new Map(allTasks.map(task => [task.id, task])).values()

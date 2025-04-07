@@ -12,6 +12,16 @@ import InitialTasksLayout from "./InitialTasksLayout";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
+export interface CategorizationDetails {
+  id: number;
+  name: string;
+
+  lesnaLesneThreshold: number;
+  lesnaPuszczanskieThreshold: number;
+  puszczanskaLesnaThreshold: number;
+  puszczanskaPuszczanskieThreshold: number;
+};
+
 export interface Task {
   id: number;
   name: string;
@@ -45,6 +55,12 @@ export interface Category {
   lesnaThreshold: number;
   puszczanskaThreshold: number;
 
+  collectedSplitPoints: number;
+  maxSplitPoints: number;
+  maxFilteredSplitPoints: number;
+
+  achievedSymbol: 'PUSZCZANSKA' | 'LESNA' | 'POLOWA';
+
   tasks: Task[];
 }
 
@@ -73,6 +89,7 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
         }
 
         if(userinfo !== null && userinfo.team !== null && userinfo.teamAccepted){
+          updateCategorizationDetails();
           updateInitialTasklist();
           updateTasklist();
         }
@@ -81,8 +98,18 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
     const [showStarredOnly, setShowStarredOnly] = useState(false);
     const [activeCategory, setActiveCategory] = useState<number>(0);
 
+    const [categorizationDetails, setCategorizationDetails] = useState<CategorizationDetails>();
     const [initialTasklist, setInitialTasklist] = useState<Array<Task>>([]);
     const [tasklist, setTasklist] = useState<Array<Category>>([]);
+
+    const updateCategorizationDetails = async () => {
+      try {
+        const res = await axios.get(`${API_ROOT}/categorization`);
+        setCategorizationDetails(res.data);
+      } catch (err: any) {
+        setCategorizationDetails(undefined);
+      }
+    };
 
     const updateInitialTasklist = async () => {
       try {
@@ -114,6 +141,12 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
 
         lesnaThreshold: -1,
         puszczanskaThreshold: -1,
+
+        collectedSplitPoints: -1,
+        maxSplitPoints: -1,
+        maxFilteredSplitPoints: -1,
+
+        achievedSymbol: "POLOWA" as ('PUSZCZANSKA' | 'LESNA' | 'POLOWA'),
       },
       {
         id: 0,
@@ -122,6 +155,12 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
 
         lesnaThreshold: -1,
         puszczanskaThreshold: -1,
+
+        collectedSplitPoints: -1,
+        maxSplitPoints: -1,
+        maxFilteredSplitPoints: -1,
+
+        achievedSymbol: "POLOWA" as ('PUSZCZANSKA' | 'LESNA' | 'POLOWA'),
       },
       ...tasklist
     ];
@@ -212,7 +251,7 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
               <Sidebar type="mobile" userinfo={userinfo} renderableCategories={renderableCategories} initialLock={initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length} myTasksMode={showStarredOnly} setMyTasksMode={setShowStarredOnly} activeCategory={activeCategory} setActiveCategory={setActiveCategory}/>
 
               {/* Top Stats Cards */}
-              <StatsBar userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} />
+              <StatsBar categorizationDetails={categorizationDetails} userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} />
 
               {/* Task List */}
               <div className="task-list">

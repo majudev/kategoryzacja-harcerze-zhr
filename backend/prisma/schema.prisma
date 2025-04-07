@@ -86,6 +86,11 @@ model CategorizationYear {
   name        String
   createdAt   DateTime @default(now())
 
+  lesnaLesneThreshold        Int @default(1)
+  lesnaPuszczanskieThreshold Int @default(1)
+  puszczanskaLesnaThreshold  Int @default(2)
+  puszczanskaPuszczanskieThreshold Int @default(2)
+
   initialTasks InitialTask[]
   taskGroup   CategorizationTaskGroup[]
 }

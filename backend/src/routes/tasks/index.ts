@@ -9,6 +9,151 @@ const prisma = new PrismaClient();
 
 router.use('/initial', initialRouter);
 
+export const getTasks = async (teamId: number, categorizationYear: number) => {
+  const tasks = await prisma.$transaction(async (tx) => {
+    const taskGroups = await tx.categorizationTaskGroup.findMany({
+      where: {
+        categorizationYearId: categorizationYear,
+      },
+      select: {
+        id: true,
+        name: true,
+
+        lesnaThreshold: true,
+        puszczanskaThreshold: true,
+
+        primaryTasks: {
+          select: {
+            id: true,
+            name: true,
+
+            primaryGroupId: true,
+            secondaryGroupId: true,
+            split: true,
+
+            type: true,
+            maxPoints: true,
+            multiplier: true,
+            refValId: true,
+
+            obligatory: true,
+          }
+        },
+        secondaryTasks: {
+          select: {
+            id: true,
+            name: true,
+
+            primaryGroupId: true,
+            secondaryGroupId: true,
+            split: true,
+
+            type: true,
+            maxPoints: true,
+            multiplier: true,
+            refValId: true,
+
+            obligatory: true,
+          }
+        },
+
+        displayPriority: true,
+      },
+      orderBy: [
+        {
+          displayPriority: 'desc',
+        },
+        {
+          name: 'desc',
+        }
+      ]
+    });
+
+    const finishedTasks = await tx.taskJoint.findMany({
+      where: {
+        teamId: teamId,
+      },
+      select: {
+        taskId: true,
+
+        value: true,
+        favourite: true,
+      }
+    });
+
+    const mergedTaskGroups = taskGroups.map(taskGroup => {
+      const primaryTasks = taskGroup.primaryTasks;
+      const secondaryTasks = taskGroup.secondaryTasks;
+      const tasks = primaryTasks.concat(secondaryTasks);
+
+      const populatedTasks = tasks.map((task) => {
+        const joint = finishedTasks.find((joint) => {return joint.taskId === task.id});
+
+        let primaryGroupName = undefined;
+        let secondaryGroupName = undefined;
+        if(task.secondaryGroupId !== null){
+          primaryGroupName = taskGroups.find(gr => gr.id === task.primaryGroupId)?.name;
+          secondaryGroupName = taskGroups.find(gr => gr.id === task.secondaryGroupId)?.name;
+        }
+
+
+        const rawScore = calculateTaskScore(task.type, (joint !== undefined ? joint.value : 0), task.maxPoints, task.multiplier);
+        let primaryMaxPoints = undefined;
+        let primaryPoints = undefined;
+        let secondaryMaxPoints = undefined;
+        let secondaryPoints = undefined;
+        if(task.secondaryGroupId !== null){
+          primaryPoints = rawScore * task.split;
+          secondaryPoints = rawScore * (1-task.split);
+          primaryMaxPoints = task.maxPoints * task.split;
+          secondaryMaxPoints = task.maxPoints * (1-task.split);
+        }
+
+        return {
+          ...task,
+          value: (joint !== undefined ? joint.value : 0),
+          // Description of the spaghetti below:
+          // if TASK is obligatory, ignore JOINT's favourite value and return
+          // JOINT's value of favourite. If JOINT's value of favourite is unset,
+          // return false (that is the default).
+          favourite: (joint !== undefined ? (joint.favourite || task.obligatory) : task.obligatory),
+          points: rawScore,
+
+          primaryGroupName,
+          secondaryGroupName,
+          primaryPoints,
+          secondaryPoints,
+          primaryMaxPoints,
+          secondaryMaxPoints,
+        };
+      });
+
+      const collectedSplitPoints = populatedTasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.points : t.secondaryGroupId === taskGroup.id ? t.secondaryPoints as number : t.primaryPoints as number), 0);
+      const maxSplitPoints = populatedTasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === taskGroup.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
+      const maxFilteredSplitPoints = populatedTasks.filter(t => t.favourite).reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === taskGroup.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
+      const achievedSymbol = collectedSplitPoints >= taskGroup.puszczanskaThreshold ? "PUSZCZANSKA" : collectedSplitPoints >= taskGroup.lesnaThreshold ? "LESNA" : "POLOWA";
+
+      return {
+        ...taskGroup,
+        primaryTasks: undefined,
+        secondaryTasks: undefined,
+        tasks: populatedTasks,
+        displayPriority: undefined,
+
+        collectedSplitPoints,
+        maxSplitPoints,
+        maxFilteredSplitPoints,
+
+        achievedSymbol,
+      };
+    });
+
+    return mergedTaskGroups.sort((a, b) => (a.displayPriority !== b.displayPriority) ? (a.displayPriority - b.displayPriority) : a.name.localeCompare(b.name));
+  });
+
+  return tasks;
+}
+
 router.get('/', async (req: Request, res: Response) => {
     if(!req.session.userId){
         res.status(500).end();
@@ -38,135 +183,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
     const teamId = user.teamId;
 
-    const tasks = await prisma.$transaction(async (tx) => {
-      const taskGroups = await tx.categorizationTaskGroup.findMany({
-        where: {
-          categorizationYearId: 1, ///TODO: de-hardcode this
-        },
-        select: {
-          id: true,
-          name: true,
-
-          lesnaThreshold: true,
-          puszczanskaThreshold: true,
-
-          primaryTasks: {
-            select: {
-              id: true,
-              name: true,
-
-              primaryGroupId: true,
-              secondaryGroupId: true,
-              split: true,
-
-              type: true,
-              maxPoints: true,
-              multiplier: true,
-              refValId: true,
-
-              obligatory: true,
-            }
-          },
-          secondaryTasks: {
-            select: {
-              id: true,
-              name: true,
-
-              primaryGroupId: true,
-              secondaryGroupId: true,
-              split: true,
-
-              type: true,
-              maxPoints: true,
-              multiplier: true,
-              refValId: true,
-
-              obligatory: true,
-            }
-          },
-
-          displayPriority: true,
-        },
-        orderBy: [
-          {
-            displayPriority: 'desc',
-          },
-          {
-            name: 'desc',
-          }
-        ]
-      });
-
-      const finishedTasks = await tx.taskJoint.findMany({
-        where: {
-          teamId: teamId,
-        },
-        select: {
-          taskId: true,
-
-          value: true,
-          favourite: true,
-        }
-      });
-
-      const mergedTaskGroups = taskGroups.map(taskGroup => {
-        const primaryTasks = taskGroup.primaryTasks;
-        const secondaryTasks = taskGroup.secondaryTasks;
-        const tasks = primaryTasks.concat(secondaryTasks);
-
-        const populatedTasks = tasks.map((task) => {
-          const joint = finishedTasks.find((joint) => {return joint.taskId === task.id});
-
-          let primaryGroupName = undefined;
-          let secondaryGroupName = undefined;
-          if(task.secondaryGroupId !== null){
-            primaryGroupName = taskGroups.find(gr => gr.id === task.primaryGroupId)?.name;
-            secondaryGroupName = taskGroups.find(gr => gr.id === task.secondaryGroupId)?.name;
-          }
-
-
-          const rawScore = calculateTaskScore(task.type, (joint !== undefined ? joint.value : 0), task.maxPoints, task.multiplier);
-          let primaryMaxPoints = undefined;
-          let primaryPoints = undefined;
-          let secondaryMaxPoints = undefined;
-          let secondaryPoints = undefined;
-          if(task.secondaryGroupId !== null){
-            primaryPoints = rawScore * task.split;
-            secondaryPoints = rawScore * (1-task.split);
-            primaryMaxPoints = task.maxPoints * task.split;
-            secondaryMaxPoints = task.maxPoints * (1-task.split);
-          }
-
-          return {
-            ...task,
-            value: (joint !== undefined ? joint.value : 0),
-            // Description of the spaghetti below:
-            // if TASK is obligatory, ignore JOINT's favourite value and return
-            // JOINT's value of favourite. If JOINT's value of favourite is unset,
-            // return false (that is the default).
-            favourite: (joint !== undefined ? (joint.favourite || task.obligatory) : task.obligatory),
-            points: rawScore,
-
-            primaryGroupName,
-            secondaryGroupName,
-            primaryPoints,
-            secondaryPoints,
-            primaryMaxPoints,
-            secondaryMaxPoints,
-          };
-        });
-
-        return {
-          ...taskGroup,
-          primaryTasks: undefined,
-          secondaryTasks: undefined,
-          tasks: populatedTasks,
-          displayPriority: undefined,
-        };
-      });
-
-      return mergedTaskGroups.sort((a, b) => (a.displayPriority !== b.displayPriority) ? (a.displayPriority - b.displayPriority) : a.name.localeCompare(b.name));
-    });
+    const tasks = await getTasks(teamId, 1);  ///TODO: de-hardcode categorizationYearId
 
     res.status(200).json(tasks);
 });
