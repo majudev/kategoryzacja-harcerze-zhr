@@ -18,7 +18,7 @@ export interface CategorizationDetails {
 
   lesnaLesneThreshold: number;
   lesnaPuszczanskieThreshold: number;
-  puszczanskaLesnaThreshold: number;
+  puszczanskaLesneThreshold: number;
   puszczanskaPuszczanskieThreshold: number;
 };
 
@@ -251,7 +251,9 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
               <Sidebar type="mobile" userinfo={userinfo} renderableCategories={renderableCategories} initialLock={initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length} myTasksMode={showStarredOnly} setMyTasksMode={setShowStarredOnly} activeCategory={activeCategory} setActiveCategory={setActiveCategory}/>
 
               {/* Top Stats Cards */}
-              <StatsBar categorizationDetails={categorizationDetails} userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} />
+              {!(initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length) && 
+                <StatsBar categorizationDetails={categorizationDetails} userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} />
+              }
 
               {/* Task List */}
               <div className="task-list">

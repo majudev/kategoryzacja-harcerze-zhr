@@ -9,6 +9,11 @@ import { UserInfo, Category, Task } from "./Kategoryzacja";
 const API_ROOT = process.env.REACT_APP_API_URL;
 
 const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode, setMyTasksMode, activeCategory, setActiveCategory} : {type: "desktop"|"mobile"; userinfo: UserInfo | null; renderableCategories: Array<Category>; initialLock: boolean; myTasksMode: boolean; setMyTasksMode: React.Dispatch<React.SetStateAction<boolean>>; activeCategory: number; setActiveCategory: React.Dispatch<React.SetStateAction<number>>}) => {
+    const categories = renderableCategories.filter((cat) => cat.id > 0);
+    const polowa = categories.filter((taskGroup) => taskGroup.achievedSymbol === 'POLOWA').length;
+    const lesna = categories.filter((taskGroup) => taskGroup.achievedSymbol === 'LESNA').length;
+    const puszczanska = categories.filter((taskGroup) => taskGroup.achievedSymbol === 'PUSZCZANSKA').length;
+
     // Desktop sidebar
     if(type === "desktop") return (
       <div className="bg-light border-end d-none d-lg-flex flex-column flex-shrink-0" style={{ width: '300px' }}>
@@ -64,9 +69,9 @@ const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode
                   </span>
                   : // TODO: Calculate real token values
                   <div className="d-flex justify-content-center">
-                    <span className="badge bg-primary rounded-pill me-1">1</span>
-                    <span className="badge bg-success rounded-pill me-1">5</span>
-                    <span className="badge bg-danger rounded-pill">7</span>
+                    <span className="badge bg-primary rounded-pill me-1">{polowa}</span>
+                    <span className="badge bg-success rounded-pill me-1">{lesna}</span>
+                    <span className="badge bg-danger rounded-pill">{puszczanska}</span>
                   </div>
                 }
               </div>
