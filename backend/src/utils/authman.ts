@@ -22,6 +22,12 @@ export const authman = (req: Request, res: Response, next: NextFunction) => {
             res.status(403).json({ message: "Forbidden" });
             return;
         }
+
+        // If district admin but no district set, return 500
+        if(req.session.userRole === "DISTRICT_COORDINATOR" && (req.session.userDistrictAdmin === null || req.session.userDistrictAdmin === undefined)){
+            res.status(500).json({ message: "you are supposedly district coordinator, but it seems your managed district id is unset" });
+            return;
+        }
     }
 
     return next();

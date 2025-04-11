@@ -11,6 +11,7 @@ import Logout from './login/Logout';
 import Root from './root/Root';
 import Kategoryzacja from './kategoryzacja/Kategoryzacja';
 import Ranking from './ranking/Ranking';
+import Admin from './admin/Admin';
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -73,7 +74,7 @@ function App(): ReactElement {
 
           <Route path="/ranking" element={<Ranking userinfo={userinfo}/>} />
 
-          <Route path="/admin">
+          <Route path="/admin" element={<Admin userinfo={userinfo}/>}>
           </Route>
         </Routes>
       </div>

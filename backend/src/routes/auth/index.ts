@@ -86,6 +86,10 @@ router.post("/login", async (req: Request, res: Response) => {
         res.status(401).json({ message: "User not activated" });
         return;
     }
+    if (!user || user.password === null) {
+        res.status(401).json({ message: "User available only via SSO" });
+        return;
+    }
     if (!(await bcrypt.compare(password, user.password))) {
         res.status(401).json({ message: "Invalid credentials" });
         return;

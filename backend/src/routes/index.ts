@@ -6,6 +6,7 @@ import teamsRouter from './teams/index';
 import tasksRouter from './tasks/index';
 import categorizationRouter from './categorization/index';
 import rankingRouter from './ranking/index';
+import adminRouter from './admin/index';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/teams', teamsRouter);
 router.use('/tasks', tasksRouter);
 router.use('/categorization', categorizationRouter);
 router.use('/ranking', rankingRouter);
+router.use('/admin', adminRouter);
 
 export default router;

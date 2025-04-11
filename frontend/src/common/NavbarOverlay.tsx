@@ -16,7 +16,7 @@ const NavbarOverlay = ({ userinfo, children } : {children: ReactNode; userinfo: 
               <li className="nav-item">
                 <NiceNavLink to="/">Strona główna</NiceNavLink>
               </li>
-              {userinfo &&
+              {userinfo && userinfo.role === "USER" &&
               <li className="nav-item">
                 <NiceNavLink to="/kategoryzacja">E-Kategoryzacja</NiceNavLink>
               </li>}
@@ -27,28 +27,9 @@ const NavbarOverlay = ({ userinfo, children } : {children: ReactNode; userinfo: 
                 <NiceNavLink to="/zasady">Zasady</NiceNavLink>
               </li>
 
-              {userinfo && userinfo.role === "DISTRICT_COORDINATOR" &&
+              {userinfo && userinfo.role !== "USER" &&
               <li className="nav-item">
-                <NiceNavLink to="/admin/district/my">Panel Chorągwi</NiceNavLink>
-              </li>}
-
-              {userinfo && userinfo.role === "TOPLEVEL_COORDINATOR" && 
-              <li className="nav-item dropdown">
-                <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Panel Chorągwi
-                </a>
-                <ul className="dropdown-menu">
-                <li><a className="dropdown-item" href="#">Chorągiew 1</a></li>
-                <li><a className="dropdown-item" href="#">Chorągiew 2</a></li>
-              </ul>
-              </li>}
-              {userinfo && userinfo.role === "TOPLEVEL_COORDINATOR" && 
-              <li className="nav-item">
-                <NiceNavLink to="/admin/full">Panel Ogólnopolski</NiceNavLink>
-              </li>}
-              {userinfo && userinfo.role === "ADMIN" &&
-              <li className="nav-item">
-                <NiceNavLink to="/admin/uber">Panel Administratora</NiceNavLink>
+                <NiceNavLink to="/admin">Panel Administratora</NiceNavLink>
               </li>}
             </ul>
             {
