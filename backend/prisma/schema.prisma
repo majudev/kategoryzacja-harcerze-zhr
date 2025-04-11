@@ -196,5 +196,5 @@ model Ranking {
   categorizationYearId  Int @id
   categorizationYear    CategorizationYear @relation(fields: [categorizationYearId], references: [id])
 
-  JSON                  String
+  JSON                  String @db.Text
 }

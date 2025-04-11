@@ -10,23 +10,30 @@ import WelcomeOverlay from './welcome/WelcomeOverlay';
 import Logout from './login/Logout';
 import Root from './root/Root';
 import Kategoryzacja from './kategoryzacja/Kategoryzacja';
+import Ranking from './ranking/Ranking';
 
 const API_ROOT = process.env.REACT_APP_API_URL;
+
+export interface UserInfo {
+  id: number;
+  email: string;
+  activated: boolean;
+  createdAt: Date;
+  lastLogin: Date;
+  role: "USER"|"DISTRICT_COORDINATOR"|"TOPLEVEL_COORDINATOR"|"ADMIN";
+  districtAdmin: {id: number; name: string;} | null;
+  team: {
+    id: number;
+    name: string;
+  }|null;
+  teamAccepted: boolean;
+};
 
 function App(): ReactElement {
   // Use reloadHook(true) to force whole UI reload when login state has changed
   const [rldhook, reloadHook] = useState(false);
 
-  const [userinfo, setUserinfo] = useState<{
-    id: number;
-    email: string;
-    activated: boolean;
-    createdAt: Date;
-    lastLogin: Date;
-    role: "USER"|"DISTRICT_COORDINATOR"|"TOPLEVEL_COORDINATOR"|"ADMIN";
-    districtAdmin: {id: number; name: string;} | null;
-    team: {accepted: boolean}|null;
-  }|null>(null);
+  const [userinfo, setUserinfo] = useState<UserInfo|null>(null);
 
   // Force login check on first entry on the page
   useEffect(() => {
@@ -63,6 +70,8 @@ function App(): ReactElement {
           <Route path="/" element={<Root userinfo={userinfo} />} />
 
           <Route path="/kategoryzacja" element={<Kategoryzacja userinfo={userinfo}/>} />
+
+          <Route path="/ranking" element={<Ranking userinfo={userinfo}/>} />
 
           <Route path="/admin">
           </Route>

@@ -21,10 +21,10 @@ const NavbarOverlay = ({ userinfo, children } : {children: ReactNode; userinfo: 
                 <NiceNavLink to="/kategoryzacja">E-Kategoryzacja</NiceNavLink>
               </li>}
               <li className="nav-item">
-                <NiceNavLink to="/kategoryzacja/ranking">E-Ranking</NiceNavLink>
+                <NiceNavLink to="/ranking">E-Ranking</NiceNavLink>
               </li>
               <li className="nav-item">
-                <NiceNavLink to="/kategoryzacja/zasady">Zasady</NiceNavLink>
+                <NiceNavLink to="/zasady">Zasady</NiceNavLink>
               </li>
 
               {userinfo && userinfo.role === "DISTRICT_COORDINATOR" &&

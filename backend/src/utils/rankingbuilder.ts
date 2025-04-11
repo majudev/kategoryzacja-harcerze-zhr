@@ -13,10 +13,15 @@ export const rebuildRanking = async (categorizationYearId: number) => {
             id: categorizationYearId,
         },
         select: {
-            ranking: true,
+            ranking: {
+                select: {
+                    JSON: true,
+                }
+            }
         }
     });
     if(catYear !== null && catYear.ranking !== null) return catYear.ranking.JSON;
+    console.log('Rebuilding...');
 
     const teams = await prisma.team.findMany({
         where: {
@@ -25,6 +30,11 @@ export const rebuildRanking = async (categorizationYearId: number) => {
         select: {
             id: true,
             name: true,
+            district: {
+                select: {
+                    name: true,
+                }
+            }
         }
     });
 
@@ -72,6 +82,7 @@ export const rebuildRanking = async (categorizationYearId: number) => {
 
         return {
             name: team.name,
+            district: team.district.name,
             ...result,
         };
     }));
@@ -102,9 +113,13 @@ export const rebuildRanking = async (categorizationYearId: number) => {
 };
 
 export const getRanking = async (categorizationYearId: number) => {
+    console.log('Getting ranking for ' + categorizationYearId);
     let ranking = await redis.get('ranking.' + categorizationYearId);
+    console.log('REDIS returned ' + ranking);
     if(ranking === null){
+        console.log('Probing builder');
         ranking = await rebuildRanking(categorizationYearId);
+        console.log('builder returned ' + ranking);
     }
     
     return ranking;

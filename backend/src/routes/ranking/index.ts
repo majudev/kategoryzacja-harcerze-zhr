@@ -7,6 +7,30 @@ import { getCategorizationYearId } from "../categorization/year";
 const router = Router();
 const prisma = new PrismaClient();
 
+router.get('/years', async (req: Request, res: Response) => {
+  const years = await prisma.categorizationYear.findMany({
+    where: {
+      OR: [
+        {
+          state: "FINISHED",
+        },
+        {
+          state: "OPEN",
+        }
+      ]
+    },
+    select: {
+        id: true,
+        name: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    }
+  });
+
+  res.status(200).json(years);
+});
+
 router.get('/:yearId?', async (req: Request, res: Response) => {
   let yearId = Number.parseInt(req.params.yearId);
 
@@ -15,13 +39,13 @@ router.get('/:yearId?', async (req: Request, res: Response) => {
     if(categorizationYearId === null){
       const year = await prisma.categorizationYear.findMany({
           where: {
-              state: "FINISHED",
+            state: "FINISHED",
           },
           select: {
-              id: true,
+            id: true,
           },
           orderBy: {
-            createdAt: "asc",
+            createdAt: "desc",
           }
       });
       if(year.length < 1){
