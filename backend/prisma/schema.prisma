@@ -81,10 +81,17 @@ model District {
 /// ----------------------------- ///
 ///        Task management        ///
 /// ----------------------------- ///
+enum CategorizationYearState {
+  DRAFT
+  OPEN
+  FINISHED
+}
+
 model CategorizationYear {
   id          Int @id @default(autoincrement())
   name        String
   createdAt   DateTime @default(now())
+  state       CategorizationYearState @default(DRAFT)
 
   lesnaLesneThreshold        Int @default(1)
   lesnaPuszczanskieThreshold Int @default(1)

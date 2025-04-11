@@ -2,14 +2,21 @@ import { Router, Request, Response } from "express";
 
 import { PrismaClient } from "@prisma/client";
 import { getTasks } from "../tasks";
+import { getCategorizationYearId } from "./year";
 
 const router = Router();
 const prisma = new PrismaClient();
 
 router.get('/', async (req: Request, res: Response) => {
+    const categorizationYearId = await getCategorizationYearId();
+    if(categorizationYearId === null){
+      res.status(409).json({ message: "no active categorization" }).end();
+      return;
+    }
+
     const categorizationYear = await prisma.categorizationYear.findUnique({
       where: {
-        id: 1, ///TODO: de-hardcode this
+        id: categorizationYearId,
       },
       select: {
         id: true,
@@ -92,14 +99,15 @@ export const getCategory = async (polowa: number, lesna: number, puszczanska: nu
 };
 
 router.get('/category', async (req: Request, res: Response) => {
-  if(!req.session.userId){
-    res.status(500).end();
+  const categorizationYearId = await getCategorizationYearId();
+  if(categorizationYearId === null){
+    res.status(409).json({ message: "no active categorization" }).end();
     return;
   }
 
   const user = await prisma.user.findUnique({
     where: {
-        id: req.session.userId,
+        id: req.session.userId as number,
     },
     select: {
         teamId: true,
@@ -122,7 +130,7 @@ router.get('/category', async (req: Request, res: Response) => {
 
   const categorizationYear = await prisma.categorizationYear.findUnique({
     where: {
-      id: 1, ///TODO: de-hardcode this
+      id: categorizationYearId,
     },
     select: {
       id: true,
@@ -139,7 +147,7 @@ router.get('/category', async (req: Request, res: Response) => {
     return;
   }
 
-  const tasks = await getTasks(teamId, 1);  ///TODO: de-hardcode categorizationYearId
+  const tasks = await getTasks(teamId, categorizationYearId);
 
   const polowa = tasks.filter((taskGroup) => taskGroup.achievedSymbol === 'POLOWA').length;
   const lesna = tasks.filter((taskGroup) => taskGroup.achievedSymbol === 'LESNA').length;

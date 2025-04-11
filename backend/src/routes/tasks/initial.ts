@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 
 import { PrismaClient } from "@prisma/client";
+import { getCategorizationYearId } from "../categorization/year";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -50,9 +51,10 @@ export const getInitialTasks = async (teamId: number, categorizationYearId: numb
 };
 
 router.get('/', async (req: Request, res: Response) => {
-    if(!req.session.userId){
-        res.status(500).end();
-        return;
+    const categorizationYearId = await getCategorizationYearId();
+    if(categorizationYearId === null){
+      res.status(409).json({ message: "no active categorization" }).end();
+      return;
     }
 
     const user = await prisma.user.findUnique({
@@ -78,7 +80,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
     const teamId = user.teamId;
 
-    const tasks = getInitialTasks(teamId, 1); ///TODO: de-hardcode this
+    const tasks = getInitialTasks(teamId, categorizationYearId);
 
     res.status(200).json(tasks);
 });
