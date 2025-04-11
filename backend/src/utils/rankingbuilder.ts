@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { getTasks } from "../routes/tasks";
 import { getCategory } from "../routes/categorization";
 import { getInitialTasks } from "../routes/tasks/initial";
-import { createClient } from "redis";
+import redis from "./redis";
 
 const prisma = new PrismaClient();
 
@@ -92,15 +92,8 @@ export const rebuildRanking = async (categorizationYearId: number) => {
     };
 
     const sorted = teamsCategories.filter((x) => x !== null).sort(sortingCriteria);
-
-    const redis = createClient({
-        url: process.env.REDIS_URL,
-    });
     
-    await redis.connect();
-    
-    const expires = 24 * 60 * 60;
-    
+    const expires = 24 * 60 * 60;   
     const entry = JSON.stringify(sorted);
     await redis.set('ranking.' + categorizationYearId, entry);
     await redis.expire('ranking.' + categorizationYearId, expires);
@@ -109,12 +102,6 @@ export const rebuildRanking = async (categorizationYearId: number) => {
 };
 
 export const getRanking = async (categorizationYearId: number) => {
-    const redis = createClient({
-        url: process.env.REDIS_URL,
-    });
-    
-    await redis.connect();
-
     let ranking = await redis.get('ranking.' + categorizationYearId);
     if(ranking === null){
         ranking = await rebuildRanking(categorizationYearId);
