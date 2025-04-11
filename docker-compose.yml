@@ -12,6 +12,7 @@ services:
 #    env_file:
 #      - backend/.env
     environment:
+      REDIS_URL: redis://redis:6379
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
       BCRYPT_ROUNDS: 11
   mysql:

@@ -5,6 +5,50 @@ import { PrismaClient } from "@prisma/client";
 const router = Router();
 const prisma = new PrismaClient();
 
+export const getInitialTasks = async (teamId: number, categorizationYearId: number) => {
+  const tasks = await prisma.$transaction(async (tx) => {
+    const tasks = await tx.initialTask.findMany({
+      where: {
+        categorizationYearId: categorizationYearId,
+      },
+      select: {
+        id: true,
+        name: true,
+
+        displayPriority: true,
+      },
+      orderBy: {
+        name: 'desc',
+      }
+    });
+
+    const finishedTasks = await tx.initialTaskJoint.findMany({
+      where: {
+        teamId: teamId,
+      },
+      select: {
+        taskId: true,
+
+        value: true,
+      }
+    });
+
+    const populatedTasks = tasks.map((task) => {
+      const joint = finishedTasks.find((joint) => {return joint.taskId === task.id});
+
+      return {
+        ...task,
+        value: (joint !== undefined ? joint.value : false),
+        displayPriority: undefined,
+      };
+    });
+
+    return populatedTasks.sort((a, b) => (a.displayPriority !== b.displayPriority) ? (a.displayPriority - b.displayPriority) : a.name.localeCompare(b.name));
+  });
+
+  return tasks;
+};
+
 router.get('/', async (req: Request, res: Response) => {
     if(!req.session.userId){
         res.status(500).end();
@@ -34,45 +78,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
     const teamId = user.teamId;
 
-    const tasks = await prisma.$transaction(async (tx) => {
-      const tasks = await tx.initialTask.findMany({
-        where: {
-          categorizationYearId: 1, ///TODO: de-hardcode this
-        },
-        select: {
-          id: true,
-          name: true,
-
-          displayPriority: true,
-        },
-        orderBy: {
-          name: 'desc',
-        }
-      });
-
-      const finishedTasks = await tx.initialTaskJoint.findMany({
-        where: {
-          teamId: teamId,
-        },
-        select: {
-          taskId: true,
-
-          value: true,
-        }
-      });
-
-      const populatedTasks = tasks.map((task) => {
-        const joint = finishedTasks.find((joint) => {return joint.taskId === task.id});
-
-        return {
-          ...task,
-          value: (joint !== undefined ? joint.value : false),
-          displayPriority: undefined,
-        };
-      });
-
-      return populatedTasks.sort((a, b) => (a.displayPriority !== b.displayPriority) ? (a.displayPriority - b.displayPriority) : a.name.localeCompare(b.name));
-    });
+    const tasks = getInitialTasks(teamId, 1); ///TODO: de-hardcode this
 
     res.status(200).json(tasks);
 });

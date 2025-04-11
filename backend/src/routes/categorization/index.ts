@@ -33,7 +33,7 @@ router.get('/', async (req: Request, res: Response) => {
     });
 });
 
-export const getCategory = async (teamId: number, polowa: number, lesna: number, puszczanska: number, lesnaLesneThreshold: number, lesnaPuszczanskieThreshold: number, puszczanskaLesneThreshold: number, puszczanskaPuszczanskieThreshold: number) => {
+export const getCategory = async (polowa: number, lesna: number, puszczanska: number, lesnaLesneThreshold: number, lesnaPuszczanskieThreshold: number, puszczanskaLesneThreshold: number, puszczanskaPuszczanskieThreshold: number) => {
   let category = 'POLOWA';
 
   const effectiveLesnaTokens = lesna + puszczanska;
@@ -145,7 +145,7 @@ router.get('/category', async (req: Request, res: Response) => {
   const lesna = tasks.filter((taskGroup) => taskGroup.achievedSymbol === 'LESNA').length;
   const puszczanska = tasks.filter((taskGroup) => taskGroup.achievedSymbol === 'PUSZCZANSKA').length;
 
-  const result = await getCategory(teamId, polowa, lesna, puszczanska, categorizationYear.lesnaLesneThreshold, categorizationYear.lesnaPuszczanskieThreshold, categorizationYear.puszczanskaLesnaThreshold, categorizationYear.puszczanskaPuszczanskieThreshold);
+  const result = await getCategory(polowa, lesna, puszczanska, categorizationYear.lesnaLesneThreshold, categorizationYear.lesnaPuszczanskieThreshold, categorizationYear.puszczanskaLesnaThreshold, categorizationYear.puszczanskaPuszczanskieThreshold);
 
   res.status(200).json(result);
 });

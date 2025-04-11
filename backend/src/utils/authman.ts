@@ -5,6 +5,9 @@ export const authman = (req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith("/auth/")) {
         return next();
     }
+    if (req.path.startsWith("/ranking")) {
+        return next();
+    }
 
     // Normal routes
     if(!req.session.userId){

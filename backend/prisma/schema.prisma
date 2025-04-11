@@ -92,7 +92,9 @@ model CategorizationYear {
   puszczanskaPuszczanskieThreshold Int @default(2)
 
   initialTasks InitialTask[]
-  taskGroup   CategorizationTaskGroup[]
+  taskGroup    CategorizationTaskGroup[]
+
+  ranking      Ranking?
 }
 
 model CategorizationTaskGroup {
@@ -181,4 +183,11 @@ model InitialTaskJoint {
   @@id([taskId, teamId])
   @@index([teamId])
   //@@index([teamId, value])
+}
+
+model Ranking {
+  categorizationYearId  Int @id
+  categorizationYear    CategorizationYear @relation(fields: [categorizationYearId], references: [id])
+
+  JSON                  String
 }
