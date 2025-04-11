@@ -67,7 +67,7 @@ const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode
                     <>{collectedSplitPoints}/{maxSplitPointsAdjusted}</>
                     }
                   </span>
-                  : // TODO: Calculate real token values
+                  :
                   <div className="d-flex justify-content-center">
                     <span className="badge bg-primary rounded-pill me-1">{polowa}</span>
                     <span className="badge bg-success rounded-pill me-1">{lesna}</span>
