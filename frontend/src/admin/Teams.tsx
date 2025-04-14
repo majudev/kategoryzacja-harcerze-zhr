@@ -15,6 +15,7 @@ const Teams = ({userinfo} : {userinfo: UserInfo | null; }) => {
   useEffect(() => {
     if(userinfo !== null){
       updateDistricts();
+      updateUsers();
     }
   }, [userinfo]);
 
@@ -22,6 +23,18 @@ const Teams = ({userinfo} : {userinfo: UserInfo | null; }) => {
   const [selectedDistrict, setSelectedDistrict] = useState(-1);
   const [district, setDistrict] = useState<District|null>(null);
   const [newTeam, setNewTeam] = useState({name: "", shadow: false});
+
+  const [users, setUsers] = useState<Array<{id: number; email: string}>>([]);
+  const [newAccessGrants, setNewAccessGrant] = useState(new Map<number,{filtertext: string; show: boolean;}>());
+
+  const updateUsers = async () => {
+    try {
+      const res = await axios.get(`${API_ROOT}/admin/users/shallow`);
+      setUsers(res.data);
+    } catch (err: any) {
+      setUsers([]);
+    }
+  };
 
   useEffect(() => {
     if(selectedDistrict > 0){
@@ -44,6 +57,37 @@ const Teams = ({userinfo} : {userinfo: UserInfo | null; }) => {
       setDistrict(res.data);
     } catch (err: any) {
       setDistrict(null);
+    }
+  };
+
+  const createTeam = async () => {
+    try {
+      const res = await axios.post(`${API_ROOT}/admin/teams/`, {
+        ...newTeam,
+        districtId: selectedDistrict,
+      });
+      updateTeams();
+    } catch (err: any) {
+    }
+    setNewTeam({name: "", shadow: false});
+  };
+
+  const disableEnableTeam = async (teamId: number, shadow: boolean) => {
+    try {
+      const res = await axios.patch(`${API_ROOT}/admin/teams/${teamId}`, {
+        shadow: shadow,
+      });
+      updateTeams();
+    } catch (err: any) {
+    }
+  };
+
+  const setAccess = async (teamId: number, userId: number, access: boolean) => {
+    try {
+      const action = (access ? "grant" : "revoke");
+      const res = await axios.patch(`${API_ROOT}/admin/teams/${action}/${userId}/on/${teamId}`);
+      updateTeams();
+    } catch (err: any) {
     }
   };
 
@@ -73,7 +117,7 @@ const Teams = ({userinfo} : {userinfo: UserInfo | null; }) => {
                   </div>
                 </div>
                 <div className="list-group-item text-center" style={{borderBottomLeftRadius: '0', borderBottomRightRadius: '0', borderBottom: '0'}}>
-                  <button className="btn btn-danger">Utwórz nową drużynę</button>
+                  <button className="btn btn-danger" onClick={(e) => createTeam()}>Utwórz nową drużynę</button>
                 </div>
               </div>
             </div>
@@ -97,7 +141,7 @@ const Teams = ({userinfo} : {userinfo: UserInfo | null; }) => {
                       <b>{team.name}</b> {team.shadow && <i> (wyłączona)</i>}<br/>
                       <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Utworzono: {(new Date(team.createdAt)).toLocaleDateString('pl')}</small>
                     </span>
-                    {!team.shadow ? <button className="btn btn-sm btn-danger">Wyłącz</button> : <button className="btn btn-sm btn-dark">Włącz</button>}
+                    {!team.shadow ? <button className="btn btn-sm btn-danger" onClick={(e) => disableEnableTeam(team.id, true)}>Wyłącz</button> : <button className="btn btn-sm btn-dark" onClick={(e) => disableEnableTeam(team.id, false)}>Włącz</button>}
                   </div>
                   <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
                     Dostęp mają:
@@ -107,8 +151,30 @@ const Teams = ({userinfo} : {userinfo: UserInfo | null; }) => {
                           {user.email} <br/>
                           <small style={{ fontSize: "0.7em", fontWeight: "bold" }}> Ostatnie logowanie: {(new Date(user.createdAt).toLocaleString('pl'))}</small>
                         </span>
-                        <button className="btn btn-sm btn-danger">Odbierz dostęp</button>
+                        <button className="btn btn-sm btn-danger" onClick={(e) => setAccess(team.id, user.id, false)}>Odbierz dostęp</button>
                       </div></li>)}
+                      {!team.shadow && <li>
+                        {newAccessGrants.get(team.id)?.show && <span>
+                          Nadaj dostęp. Wyszukaj osobę po adresie e-mail:
+                          <input className="form-control" placeholder="szukaj emaili..." value={newAccessGrants.get(team.id)?.filtertext} onChange={(e) => {let m = new Map(newAccessGrants); m.set(team.id, {...(m.get(team.id) === undefined ? {show: false, filtertext: ""} : m.get(team.id)) as any, filtertext: e.target.value}); setNewAccessGrant(m);}}></input>
+                          <ul>
+                            {users.filter((u) => {
+                              const filtertext = newAccessGrants.get(team.id);
+                              if(filtertext === undefined || filtertext.filtertext === "") return true;
+                              return u.email.includes(filtertext.filtertext);
+                            }).map((user, index, array) => {
+                              if(array.length > 10){
+                                if(index > 0) return;
+                                return <li><i>wpisz więcej znaków do wyszukiwarki</i></li>
+                              }
+                              return <li>
+                                {user.email} <button className="btn btn-sm btn-dark" onClick={(e) => {setAccess(team.id, user.id, true); setNewAccessGrant(new Map());}}>Nadaj uprawnienia</button>
+                              </li>
+                            })}
+                          </ul>
+                        </span>}
+                        {!newAccessGrants.get(team.id)?.show && <button className="btn btn-dark btn-sm" onClick={(e) => {let m = new Map(newAccessGrants); m.set(team.id, {...(m.get(team.id) === undefined ? {show: false, filtertext: ""} : m.get(team.id)) as any, show: true}); setNewAccessGrant(m);}}>Dodaj osobę</button>}
+                      </li>}
                     </ul>
                   </span>
                   {team.owners.filter((u) => !u.teamAccepted).length > 0 && <span className="flex-grow-1" style={{lineHeight: "1.3"}}>

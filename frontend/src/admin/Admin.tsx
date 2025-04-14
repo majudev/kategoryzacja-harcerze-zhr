@@ -6,6 +6,7 @@ import 'bootstrap/js/dist/tab';
 import { UserInfo } from "../App";
 import Districts from "./Districts";
 import Teams from "./Teams";
+import Users from "./Users";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -242,6 +243,7 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
               <>
                 {activeMenu === 50 && <Districts userinfo={userinfo} />}
                 {activeMenu === 60 && <Teams userinfo={userinfo} />}
+                {activeMenu === 70 && <Users userinfo={userinfo} />}
               </>
               :
               <>

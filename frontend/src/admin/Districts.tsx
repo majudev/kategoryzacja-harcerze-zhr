@@ -50,6 +50,17 @@ const Districts = ({userinfo} : {userinfo: UserInfo | null; }) => {
     }
   };
 
+  const createDistrict = async () => {
+    try {
+      const res = await axios.post(`${API_ROOT}/admin/districts/`, {
+        ...newDistrict
+      });
+      updateDistricts();
+    } catch (err: any) {
+    }
+    setNewDistrict({name: "", shadow: false, autoaccept: true});
+  };
+
   return (
     <div className="row row-cols-1 row-cols-xl-2 g-4">
       <div key="nowa" className="col">
@@ -74,7 +85,7 @@ const Districts = ({userinfo} : {userinfo: UserInfo | null; }) => {
                 </div>
               </div>
               <div className="list-group-item text-center" style={{borderBottomLeftRadius: '0', borderBottomRightRadius: '0'}}>
-                <button className="btn btn-danger">Utwórz nową chorągiew</button>
+                <button className="btn btn-danger" onClick={(e) => createDistrict()}>Utwórz nową chorągiew</button>
               </div>
             </div>
           </div>
