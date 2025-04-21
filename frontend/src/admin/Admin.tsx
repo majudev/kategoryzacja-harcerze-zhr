@@ -7,6 +7,7 @@ import { UserInfo } from "../App";
 import Districts from "./Districts";
 import Teams from "./Teams";
 import Users from "./Users";
+import CategorizationLayout from "./CategorizationLayout";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -247,6 +248,7 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
               </>
               :
               <>
+                <CategorizationLayout userinfo={userinfo} />
                 {/* Top Stats Cards */}
                 {/*!(initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length) && 
                   <StatsBar categorizationDetails={categorizationDetails} userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} />
