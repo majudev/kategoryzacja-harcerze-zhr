@@ -67,12 +67,12 @@ const CategoryLayout = ({userinfo, category: cat, myTasksMode, toggleMyTask, upd
             </div>
             <div className="card-body">
               <p>Oznaczyłeś do zrobienia <b>{cat.tasks.filter(t => t.favourite).length}</b> zadań.</p>
-              <p>Gdybyś wykonał je wszystkie, mógłbyś mieć {maxFilteredSplitPoints} punktów i zdobyć token <img className={maxFilteredSplitPoints >= cat.puszczanskaThreshold ? "img-src-puszczanska" : maxFilteredSplitPoints >= cat.lesnaThreshold ? "img-src-lesna" : "img-src-polowa"} style={{ width: '20px', height: '20px' }} />.</p>
+              <p>Gdybyś wykonał je wszystkie, mógłbyś mieć {maxFilteredSplitPoints} punktów i zdobyć symbol <img className={maxFilteredSplitPoints >= cat.puszczanskaThreshold ? "img-src-puszczanska" : maxFilteredSplitPoints >= cat.lesnaThreshold ? "img-src-lesna" : "img-src-polowa"} style={{ width: '20px', height: '20px' }} />.</p>
               <table className="table">
                 <thead>
                   <tr>
                     <th scope="col">Punkty</th>
-                    <th scope="col" className="text-center">Token</th>
+                    <th scope="col" className="text-center">Symbol</th>
                   </tr>
                 </thead>
                 <tbody>

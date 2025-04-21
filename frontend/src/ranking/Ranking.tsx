@@ -77,7 +77,7 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
                       <tr>
                         <th scope="col" className="text-center">#</th>
                         <th scope="col" style={{width: "100%"}}>Nazwa drużyny</th>
-                        <th scope="col" className="text-center">Tokeny</th>
+                        <th scope="col" className="text-center">Symbole</th>
                         <th scope="col" className="text-center">Kategoria</th>
                       </tr>
                     </thead>

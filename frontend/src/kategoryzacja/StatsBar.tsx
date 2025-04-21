@@ -95,7 +95,7 @@ const StatsBar = ({userinfo, categorizationDetails, categories, myTasksMode} : {
         <div className="col-12 col-sm-6 col-xl-3">
           <div className="card shadow-sm border-0 h-100">
             <div className="card-body">
-              <h5 className="text-muted mb-3">Twoje tokeny</h5>
+              <h5 className="text-muted mb-3">Twoje symbole</h5>
               <div className="d-flex justify-content-between">
                   <div className="d-flex justify-content-center flex-column">
                     <img className="img-src-polowa" style={{ width: '40px', height: '40px' }} />
