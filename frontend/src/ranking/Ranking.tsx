@@ -11,6 +11,7 @@ const API_ROOT = process.env.REACT_APP_API_URL;
 export interface Team {
   name: string;
   category: 'POLOWA' | 'LESNA' | 'PUSZCZANSKA';
+  points: number;
   tokens: {
     polowa: number;
     lesna: number;
@@ -29,6 +30,7 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
 
     const [rankingYears, setRankingYears] = useState<Array<{id: number; name: string}>>([{id: -1, name: 'Najnowszy'}]);
     const [rankingYear, setRankingYear] = useState<number>(-1);
+    const [rankingDistrict, setRankingDistrict] = useState<string>("");
     const [ranking, setRanking] = useState<Array<Team>>([]);
 
     useEffect(() => {
@@ -64,6 +66,12 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
             <div className="col-12 col-lg-8 offset-lg-2">
               <ul className="list-group">
                 <li className="list-group-item list-group-item-info d-flex justify-content-center bg-dark text-center text-white position-relative">
+                  <select className="form-control position-absolute ms-2" style={{left: "0px", width: "fit-content", maxWidth: "200px"}} value={rankingDistrict.toString()} onChange={(e) => {setRankingDistrict(e.target.value);}} required>
+                    <option value="">Wszystkie chorągwie</option>
+                    {[...new Set(ranking.map(r => r.district))].map((district) => {
+                      return <option value={district}>{district}</option>;
+                    })}
+                  </select>
                   <h4 className="mb-1 mt-1">Ranking</h4>
                   <select className="form-control position-absolute me-2" style={{right: "0px", width: "fit-content"}} value={rankingYear.toString()} onChange={(e) => {setRankingYear(Number.parseInt(e.target.value));}} required>
                     {rankingYears.map((year) => {
@@ -77,22 +85,18 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
                       <tr>
                         <th scope="col" className="text-center">#</th>
                         <th scope="col" style={{width: "100%"}}>Nazwa drużyny</th>
-                        <th scope="col" className="text-center">Symbole</th>
+                        <th scope="col" className="text-center">Punkty</th>
                         <th scope="col" className="text-center">Kategoria</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {ranking.map((entry, index) => {
+                      {(rankingDistrict === "" ? ranking : ranking.filter((r) => r.district === rankingDistrict)).map((entry, index) => {
                         return <>
                           <tr>
                             <td>{index + 1}</td>
                             <td>{entry.name}</td>
                             <td className="text-center" style={{whiteSpace: "nowrap"}}>
-                              {(entry.tokens !== undefined ? <>
-                                <span className="badge bg-primary rounded-pill me-1">{entry.tokens.polowa}</span>
-                                <span className="badge bg-success rounded-pill me-1">{entry.tokens.lesna}</span>
-                                <span className="badge bg-danger rounded-pill">{entry.tokens.puszczanska}</span>
-                              </> : <span>-</span>)}
+                              {entry.points}
                             </td>
                             <td className="pb-0 pt-1 text-center">
                               <img className={"img-src-" + entry.category.toLowerCase()} style={{width: '35px', height: '35px'}}></img>

@@ -182,7 +182,7 @@ const Teams = ({userinfo} : {userinfo: UserInfo | null; }) => {
                     <ul className="mb-0">
                       {team.owners.filter((u) => !u.teamAccepted).map((user) => <li><div className="d-flex align-items-between">
                         <span className="flex-grow-1">{user.email}</span>
-                        <button className="btn btn-sm btn-dark">Przyznaj dostęp</button>
+                        <button className="btn btn-sm btn-dark" onClick={(e) => {setAccess(team.id, user.id, true);}}>Nadaj uprawnienia</button>
                       </div></li>)}
                     </ul>
                   </span>}

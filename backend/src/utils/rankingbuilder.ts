@@ -83,6 +83,7 @@ export const rebuildRanking = async (categorizationYearId: number) => {
         return {
             name: team.name,
             district: team.district.name,
+            points: tasks.reduce((prev, val) => prev + val.collectedSplitPoints, 0),
             ...result,
         };
     }));
@@ -93,10 +94,8 @@ export const rebuildRanking = async (categorizationYearId: number) => {
         else if(a.category === 'LESNA' && b.category === 'POLOWA') return -1;
         else if(a.category === 'POLOWA' && b.category !== 'POLOWA') return 1;
         else{
-            if(a.tokens.puszczanska > b.tokens.puszczanska) return -1;
-            else if(a.tokens.puszczanska < b.tokens.puszczanska) return 1;
-            else if(a.tokens.lesna > b.tokens.lesna) return -1;
-            else if(a.tokens.lesna < b.tokens.lesna) return 1;
+            if(a.points > b.points) return -1;
+            else if(a.points < b.points) return 1;
         }
 
         return (a.name as string).localeCompare(b.name as string);
