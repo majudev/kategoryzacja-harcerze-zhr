@@ -243,27 +243,27 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
         <div className="dashboard-layout" style={{ height: 'calc(100vh - 56px)' }}>
           <div className="d-flex flex-column flex-lg-row h-100">
             {/* Desktop Sidebar */}
-            <Sidebar type="desktop" userinfo={userinfo} renderableCategories={renderableCategories} initialLock={initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length} myTasksMode={showStarredOnly} setMyTasksMode={setShowStarredOnly} activeCategory={activeCategory} setActiveCategory={setActiveCategory}/>
+            <Sidebar type="desktop" renderableCategories={renderableCategories} initialLock={initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length} myTasksMode={showStarredOnly} setMyTasksMode={setShowStarredOnly} activeCategory={activeCategory} setActiveCategory={setActiveCategory}/>
 
             {/* Main Content */}
             <div className="flex-grow-1 overflow-auto p-4">
               {/* Mobile Header */}
-              <Sidebar type="mobile" userinfo={userinfo} renderableCategories={renderableCategories} initialLock={initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length} myTasksMode={showStarredOnly} setMyTasksMode={setShowStarredOnly} activeCategory={activeCategory} setActiveCategory={setActiveCategory}/>
+              <Sidebar type="mobile" renderableCategories={renderableCategories} initialLock={initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length} myTasksMode={showStarredOnly} setMyTasksMode={setShowStarredOnly} activeCategory={activeCategory} setActiveCategory={setActiveCategory}/>
 
               {/* Top Stats Cards */}
               {!(initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length) && 
-                <StatsBar categorizationDetails={categorizationDetails} userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} />
+                <StatsBar categorizationDetails={categorizationDetails} categories={tasklist} myTasksMode={showStarredOnly} />
               }
 
               {/* Task List */}
               <div className="task-list">
                 {activeCategory === 0 ?
-                  <SummaryLayout userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask}/>
+                  <SummaryLayout categories={tasklist} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask}/>
                   : activeCategory === -1 ?
-                  <InitialTasksLayout userinfo={userinfo} tasks={initialTasklist} toggleInitialTask={toggleInitialTask}/>
+                  <InitialTasksLayout tasks={initialTasklist} toggleInitialTask={toggleInitialTask}/>
                   :
                   renderableCategories.filter((cat) => cat.id === activeCategory).map((cat) =>
-                    <CategoryLayout userinfo={userinfo} category={cat} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask}/>
+                    <CategoryLayout category={cat} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask}/>
                   )
                 }
               </div>

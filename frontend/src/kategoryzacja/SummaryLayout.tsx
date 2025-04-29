@@ -10,7 +10,7 @@ import { Category, UserInfo } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const SummaryLayout = ({userinfo, categories, myTasksMode, toggleMyTask, updateTask} : {userinfo: UserInfo | null; categories: Array<Category>; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void}) => {
+const SummaryLayout = ({categories, myTasksMode, toggleMyTask, updateTask} : {categories: Array<Category>; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void}) => {
     return (
       <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
         {categories.map((category) => {

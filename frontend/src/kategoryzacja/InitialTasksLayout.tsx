@@ -3,7 +3,7 @@ import { UserInfo, Task } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const InitialTasksLayout = ({userinfo, tasks, toggleInitialTask} : {userinfo: UserInfo | null; tasks: Array<Task>; toggleInitialTask: (taskId: number, state: boolean) => void}) => {
+const InitialTasksLayout = ({tasks, toggleInitialTask} : {tasks: Array<Task>; toggleInitialTask: (taskId: number, state: boolean) => void}) => {
     return (
       <div className="container-fluid row m-0 p-0">
         <div className="col-12 col-md-6 p-0">

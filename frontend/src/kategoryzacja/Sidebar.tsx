@@ -8,7 +8,7 @@ import { UserInfo, Category, Task } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const Sidebar = ({type, userinfo, renderableCategories, initialLock, myTasksMode, setMyTasksMode, activeCategory, setActiveCategory} : {type: "desktop"|"mobile"; userinfo: UserInfo | null; renderableCategories: Array<Category>; initialLock: boolean; myTasksMode: boolean; setMyTasksMode: React.Dispatch<React.SetStateAction<boolean>>; activeCategory: number; setActiveCategory: React.Dispatch<React.SetStateAction<number>>}) => {
+const Sidebar = ({type, renderableCategories, initialLock, myTasksMode, setMyTasksMode, activeCategory, setActiveCategory} : {type: "desktop"|"mobile"; renderableCategories: Array<Category>; initialLock: boolean; myTasksMode: boolean; setMyTasksMode: React.Dispatch<React.SetStateAction<boolean>>; activeCategory: number; setActiveCategory: React.Dispatch<React.SetStateAction<number>>}) => {
     const categories = renderableCategories.filter((cat) => cat.id > 0);
     const polowa = categories.filter((taskGroup) => taskGroup.achievedSymbol === 'POLOWA').length;
     const lesna = categories.filter((taskGroup) => taskGroup.achievedSymbol === 'LESNA').length;
