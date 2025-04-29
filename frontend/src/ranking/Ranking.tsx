@@ -32,10 +32,20 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
     const [rankingYear, setRankingYear] = useState<number>(-1);
     const [rankingDistrict, setRankingDistrict] = useState<string>("");
     const [ranking, setRanking] = useState<Array<Team>>([]);
+    const [rankingByPts, setRankingByPts] = useState<Array<Team>>([]);
+    const [sortByPts, setSortByPts] = useState(false);
 
     useEffect(() => {
       updateRanking();
     }, [rankingYear]);
+
+    useEffect(() => {
+      setRankingByPts(ranking.sort((a,b) => {
+        if(a.points > b.points) return -1;
+        if(b.points < b.points) return 1;
+        return a.name.localeCompare(b.name);
+      }));
+    }, [ranking]);
 
     const updateYears = async () => {
       try {
@@ -57,6 +67,8 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
         setRanking([]);
       }
     };
+
+    const displayRanking = sortByPts ? rankingByPts : ranking;
     
 
     return (
@@ -85,12 +97,22 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
                       <tr>
                         <th scope="col" className="text-center">#</th>
                         <th scope="col" style={{width: "100%"}}>Nazwa drużyny</th>
-                        <th scope="col" className="text-center">Punkty</th>
-                        <th scope="col" className="text-center">Kategoria</th>
+                        <th scope="col" className="text-center">
+                          <span className={"sortable-header nowrap " + (sortByPts ? 'active' : '')} onClick={(e) => {setSortByPts(true)}}>
+                            Punkty 
+                            <i className={`bi ${sortByPts ? 'bi-caret-down-fill' : 'bi-caret-down'}`} />
+                          </span>
+                        </th>
+                        <th scope="col" className="text-center">
+                          <span className={"sortable-header nowrap " + (!sortByPts ? 'active' : '')} onClick={(e) => {setSortByPts(false)}}>
+                            Kategoria 
+                            <i className={`bi ${!sortByPts ? 'bi-caret-down-fill' : 'bi-caret-down'}`} />
+                          </span>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {(rankingDistrict === "" ? ranking : ranking.filter((r) => r.district === rankingDistrict)).map((entry, index) => {
+                      {(rankingDistrict === "" ? displayRanking : displayRanking.filter((r) => r.district === rankingDistrict)).map((entry, index) => {
                         return <>
                           <tr>
                             <td>{index + 1}</td>

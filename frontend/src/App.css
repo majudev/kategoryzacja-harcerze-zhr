@@ -63,3 +63,20 @@
   border: 1px solid var(--bs-progress-bg);
   transition: 0.6s ease;
 }
+
+.sortable-table-header {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.sortable-table-header:hover {
+  color: #0d6efd; /* bootstrap primary */
+}
+.sortable-table-header i {
+  transition: transform 0.2s;
+}
+.sortable-table-header.active i {
+  /* slight rotation when active */
+  transform: rotate(180deg);
+}
