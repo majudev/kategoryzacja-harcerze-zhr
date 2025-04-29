@@ -65,7 +65,7 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
       {
         id: 70,
         name: "Użytkownicy",
-        level: "TOPLEVEL" as ('TOPLEVEL'|'DISTRICT'|'UBER'),
+        level: "DISTRICT" as ('TOPLEVEL'|'DISTRICT'|'UBER'),
       },
       {
         id: 80,

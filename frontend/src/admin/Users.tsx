@@ -82,6 +82,7 @@ const Users = ({userinfo} : {userinfo: UserInfo | null; }) => {
             <h5 className="mb-0 text-center">Administruj użytkownikami</h5>
           </div>
           <div className="card-body p-3 ps-4 pe-4">
+            {userinfo?.role === 'DISTRICT_COORDINATOR' && <small className="text-center">Widzisz tylko użytkowników ze swojej chorągwi oraz tych którzy jeszcze nie wybrali chorągwi.</small>}
             <table className="table">
               <thead>
                 <tr>
