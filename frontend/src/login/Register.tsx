@@ -57,6 +57,7 @@ const Register = () => {
         {error && <div className="alert alert-danger">{translate(error)}</div>}
         {interror && <div className="alert alert-danger">{interror}</div>}
         {success && <div className="alert alert-success">{success}</div>}
+        {form.email.endsWith("@zhr.pl") && <div className="alert alert-danger">Konta @zhr.pl logują się przez specjalny przycisk - nie musisz tworzyć konta. Przycisk znajduje się <Link to="/login">na stronie logowania</Link>.</div>}
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="form-label">Email</label>
@@ -80,7 +81,7 @@ const Register = () => {
             <button type="button" className="btn btn-link p-0 mt-1" onClick={loadCaptcha}>Wylosuj inny kod</button>
           </div>
 
-          <button type="submit" className="btn btn-primary w-100" disabled={loading || interror !== ""}>
+          <button type="submit" className="btn btn-primary w-100" disabled={loading || interror !== "" || form.email.endsWith("@zhr.pl")}>
             {loading ? "Rejestrowanie..." : "Zarejestruj"}
           </button>
         </form>

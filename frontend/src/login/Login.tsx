@@ -76,6 +76,7 @@ const Login = ({reloadHook} : {reloadHook : React.Dispatch<React.SetStateAction<
         {
           (query.get("status") === "error" ) ? <div className="alert alert-danger">{translateError(query.get("code") as string, query.get("message") as string)}</div> : <></>
         }
+        {form.email.endsWith("@zhr.pl") && <div className="alert alert-danger">Dla maili @zhr.pl użyj przycisku poniżej ;)</div>}
         <div className="mt-3 d-flex justify-content-center">
             <GoogleButton label='Logowanie przez ZHR.pl' onClick={() => { window.location.href = process.env.REACT_APP_API_URL + '/auth/google'; }} />
         </div>
@@ -98,7 +99,7 @@ const Login = ({reloadHook} : {reloadHook : React.Dispatch<React.SetStateAction<
             <button type="button" className="btn btn-link p-0 mt-1" onClick={loadCaptcha}>Wylosuj inny kod</button>
           </div>
 
-          <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+          <button type="submit" className="btn btn-primary w-100" disabled={loading || form.email.endsWith("@zhr.pl")}>
             {loading ? "Logowanie..." : "Zaloguj się"}
           </button>
         </form>
