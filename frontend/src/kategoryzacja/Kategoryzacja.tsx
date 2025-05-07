@@ -25,6 +25,7 @@ export interface CategorizationDetails {
 export interface Task {
   id: number;
   name: string;
+  description: string|null;
   value: number;
   favourite: boolean;
   
@@ -32,7 +33,7 @@ export interface Task {
   secondaryGroupId: number|null;
   split: number;
 
-  type: "BOOLEAN" | "LINEAR" | "LINEAR_REF" | "PARABOLIC_REF";
+  type: "BOOLEAN" | "LINEAR" | "LINEAR_REF" | "PARABOLIC_REF" | "REFONLY";
   maxPoints: number;
   multiplier: number|null;
 

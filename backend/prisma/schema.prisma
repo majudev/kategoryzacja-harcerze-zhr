@@ -125,7 +125,7 @@ enum CategorizationTaskType {
   LINEAR
   LINEAR_REF
   PARABOLIC_REF
-  //FORMULA
+  REFONLY
 }
 
 model CategorizationTask {

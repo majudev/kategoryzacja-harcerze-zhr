@@ -297,6 +297,16 @@ const CategorizationLayout = ({userinfo} : {userinfo: UserInfo | null;}) => {
                         <option value="LINEAR">Liniowe</option>
                         <option value="LINEAR_REF">Liniowe z odniesieniem</option>
                         <option value="LINEAR_REF">Paraboliczne z odniesieniem</option>
+                        <option value="REFONLY">Niepunktowane (wartość odniesienia)</option>
+                      </select>
+                    </div>
+                    <div className="input-group mb-1">
+                      <div className="input-group-prepend">
+                        <span className="input-group-text">Obowiązkowe</span>
+                      </div>
+                      <select className="form-select">
+                        <option value="true">Tak</option>
+                        <option value="false" selected>Nie</option>
                       </select>
                     </div>
                     <div className="input-group mb-1">

@@ -64,7 +64,10 @@ const Sidebar = ({type, renderableCategories, initialLock, myTasksMode, setMyTas
                     {cat.id === -1 ?
                     <>{cat.tasks.filter(t => t.value).length}/{cat.tasks.length}</>
                     :
+                    myTasksMode ?
                     <>{collectedSplitPoints}/{maxSplitPointsAdjusted}</>
+                    :
+                    <>{collectedSplitPoints}</>
                     }
                   </span>
                   :
@@ -75,7 +78,7 @@ const Sidebar = ({type, renderableCategories, initialLock, myTasksMode, setMyTas
                   </div>
                 }
               </div>
-              {cat.id !== 0 && <div className="progress mt-2" style={{height: '3px', position: 'relative', overflow: "visible"}}>
+              {cat.id !== 0 && (myTasksMode || cat.id === -1) && <div className="progress mt-2" style={{height: '3px', position: 'relative', overflow: "visible"}}>
                 {cat.id === -1 ?
                 <div 
                   className="progress-bar bg-success" 

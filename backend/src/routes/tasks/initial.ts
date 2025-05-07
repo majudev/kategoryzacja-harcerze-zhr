@@ -15,6 +15,7 @@ export const getInitialTasks = async (teamId: number, categorizationYearId: numb
       select: {
         id: true,
         name: true,
+        description: true,
 
         displayPriority: true,
       },

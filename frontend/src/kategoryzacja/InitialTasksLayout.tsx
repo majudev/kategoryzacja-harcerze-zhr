@@ -1,9 +1,12 @@
 import 'bootstrap/js/dist/tab';
 import { UserInfo, Task } from "./Kategoryzacja";
+import { useState } from 'react';
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
 const InitialTasksLayout = ({tasks, toggleInitialTask} : {tasks: Array<Task>; toggleInitialTask: (taskId: number, state: boolean) => void}) => {
+  const [showTaskMap, setShowTaskMap] = useState(new Map<number, boolean>());
+
     return (
       <div className="container-fluid row m-0 p-0">
         <div className="col-12 col-md-6 p-0">
@@ -20,8 +23,10 @@ const InitialTasksLayout = ({tasks, toggleInitialTask} : {tasks: Array<Task>; to
                   checked={task.value > 0}
                   onChange={() => toggleInitialTask(task.id, !task.value)}
                 />
-                <span className={`flex-grow-1 ${task.value ? 'text-muted text-decoration-line-through' : ''}`}>
-                  {task.name}
+                <span className={`flex-grow-1`}>
+                  <span className={`${task.value ? 'text-muted text-decoration-line-through' : ''}`}>{task.name}</span>
+                  {task.description && <><br/><small onClick={(e) => {const newMap = new Map(showTaskMap); newMap.set(task.id, !(showTaskMap.get(task.id) || false)); setShowTaskMap(newMap)}}>{showTaskMap.get(task.id) ? 'Zwiń' : 'Rozwiń'} opis <i className={`bi bi-caret-${showTaskMap.get(task.id) ? 'down' : 'left'}-fill`} /></small></>}
+                  {showTaskMap.get(task.id) && <><br/><small>{task.description}</small></>}
                 </span>
               </div>
             ))}

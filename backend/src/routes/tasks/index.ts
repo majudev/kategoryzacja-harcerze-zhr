@@ -27,6 +27,7 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
           select: {
             id: true,
             name: true,
+            description: true,
 
             primaryGroupId: true,
             secondaryGroupId: true,
@@ -44,6 +45,7 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
           select: {
             id: true,
             name: true,
+            description: true,
 
             primaryGroupId: true,
             secondaryGroupId: true,

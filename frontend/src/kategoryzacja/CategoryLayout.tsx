@@ -16,6 +16,8 @@ const CategoryLayout = ({category: cat, myTasksMode, toggleMyTask, updateTask} :
   const maxSplitPoints = cat.tasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === cat.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
   const maxFilteredSplitPoints = cat.tasks.filter(t => t.favourite).reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === cat.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
 
+  const [showTaskMap, setShowTaskMap] = useState(new Map<number, boolean>());
+
     return (
       <div className="container-fluid row m-0 p-0">
         <div className="col-12 col-md-8 p-0">
@@ -45,15 +47,18 @@ const CategoryLayout = ({category: cat, myTasksMode, toggleMyTask, updateTask} :
                 />
                 }
                 <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                  {task.name} - <b>{task.secondaryGroupId === null ? task.points : task.secondaryGroupId === cat.id ? task.secondaryPoints : task.primaryPoints}/{task.secondaryGroupId === null ? task.maxPoints : task.secondaryGroupId === cat.id ? task.secondaryMaxPoints : task.primaryMaxPoints} pkt</b>
-                  {task.secondaryGroupId !== null && <><br/>
-                  <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Zadanie dzielone: max {task.primaryMaxPoints} pkt do {task.primaryGroupName}, osobne max {task.secondaryMaxPoints} pkt do {task.secondaryGroupName}</small>
+                  {task.name} - {task.type === "REFONLY" ? <b>niepunktowane</b> : <b>{task.secondaryGroupId === null ? task.points : task.secondaryGroupId === cat.id ? task.secondaryPoints : task.primaryPoints}/{task.secondaryGroupId === null ? task.maxPoints : task.secondaryGroupId === cat.id ? task.secondaryMaxPoints : task.primaryMaxPoints} pkt</b>}
+                  {task.type !== "REFONLY" && task.secondaryGroupId !== null && <><br/>
+                    <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Zadanie dzielone: max {task.primaryMaxPoints} pkt do {task.primaryGroupName}, osobne max {task.secondaryMaxPoints} pkt do {task.secondaryGroupName}</small>
                   </>}
+                  {task.description && <><br/><small onClick={(e) => {const newMap = new Map(showTaskMap); newMap.set(task.id, !(showTaskMap.get(task.id) || false)); setShowTaskMap(newMap)}}>{showTaskMap.get(task.id) ? 'Zwiń' : 'Rozwiń'} opis <i className={`bi bi-caret-${showTaskMap.get(task.id) ? 'down' : 'left'}-fill`} /></small></>}
+                  {showTaskMap.get(task.id) && <><br/><small>{task.description}</small></>}
                 </span>
                 <button 
-                  className="btn btn-link p-0 ms-2"
+                  className="btn p-0 ms-2 d-inline-flex align-items-center"
                   onClick={() => {if(!task.obligatory) toggleMyTask(task.id, !task.favourite)}}
                 >
+                  {task.obligatory && <small className="me-1" style={{ fontSize: "0.7em", fontWeight: "bold" }}>obowiązkowe</small>}
                   <i className={`bi bi-star${task.favourite ? '-fill' : ''} ${task.favourite ? 'text-warning' : 'text-secondary'}`} />
                 </button>
               </div>
