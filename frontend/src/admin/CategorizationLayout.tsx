@@ -14,7 +14,7 @@ const CategorizationLayout = ({userinfo} : {userinfo: UserInfo | null;}) => {
   const [nuclearmode, setNuclearmode] = useState(false);
 
   const [newGroup, setNewGroup] = useState<{name: string; displayPriority: number;}>({name: "", displayPriority: 100});
-  const [newInitial, setNewInitial] = useState<string|null>(null);
+  const [newInitial, setNewInitial] = useState<{text: string; description: string;}|null>(null);
 
     return (
       <>
@@ -172,35 +172,59 @@ const CategorizationLayout = ({userinfo} : {userinfo: UserInfo | null;}) => {
               <div className="card-body p-0">
                 <div className="list-group">
                   <div className="list-group-item">
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Treść wymagania</span>
+                    <div className="d-flex mb-3">
+                      <div className="w-100">
+                        <div className="input-group mb-1">
+                          <div className="input-group-prepend">
+                            <span className="input-group-text">Treść wymagania</span>
+                          </div>
+                          <input className="form-control" type="text" value="Drużyna istnieje"/>
+                        </div>
+                        <div className="input-group mb-1">
+                          <div className="input-group-prepend">
+                            <span className="input-group-text h-100">Opis wymagania</span>
+                          </div>
+                          <textarea className="form-control"/>
+                        </div>
                       </div>
-                      <input className="form-control" type="text" value="Drużyna istnieje"/>
-                      <div className="input-group-apppend">
-                        <span className="btn btn-danger input-group-text">Usuń</span>
-                      </div>
+                      <button className="ms-1 btn btn-danger input-group-text">Usuń</button>
                     </div>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Treść wymagania</span>
+                    <div className="d-flex mb-3">
+                      <div className="w-100">
+                        <div className="input-group mb-1">
+                          <div className="input-group-prepend">
+                            <span className="input-group-text">Treść wymagania</span>
+                          </div>
+                          <input className="form-control" type="text" value="Drużynowy myje zęby raz w tygodniu"/>
+                        </div>
+                        <div className="input-group mb-1">
+                          <div className="input-group-prepend">
+                            <span className="input-group-text h-100">Opis wymagania</span>
+                          </div>
+                          <textarea className="form-control"/>
+                        </div>
                       </div>
-                      <input className="form-control" type="text" value="Drużynowy myje zęby raz w tygodniu"/>
-                      <div className="input-group-apppend">
-                        <span className="btn btn-danger input-group-text">Usuń</span>
-                      </div>
+                      <button className="ms-1 btn btn-danger input-group-text">Usuń</button>
                     </div>
                   </div>
                   <div className="list-group-item text-center">
-                    {newInitial === null && <button className="btn btn-dark" onClick={(e) => setNewInitial("")}>Dodaj nowe wymaganie</button>}
-                    {newInitial !== null && <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Treść wymagania</span>
+                    {newInitial === null && <button className="btn btn-dark" onClick={(e) => setNewInitial({text: "", description: ""})}>Dodaj nowe wymaganie</button>}
+                    {newInitial !== null && <div className="d-flex mb-3">
+                      <div className="w-100">
+                        <div className="input-group mb-1">
+                          <div className="input-group-prepend">
+                            <span className="input-group-text">Treść wymagania</span>
+                          </div>
+                          <input className="form-control" type="text" value={newInitial.text} onChange={(e) => setNewInitial({...newInitial, text: e.target.value})}/>
+                        </div>
+                        <div className="input-group mb-1">
+                          <div className="input-group-prepend">
+                            <span className="input-group-text h-100">Opis wymagania</span>
+                          </div>
+                          <textarea className="form-control" value={newInitial.description} onChange={(e) => setNewInitial({...newInitial, description: e.target.value})}/>
+                        </div>
                       </div>
-                      <input className="form-control" type="text" value={newInitial} onChange={(e) => setNewInitial(e.target.value)}/>
-                      <div className="input-group-apppend">
-                        <span className="btn btn-dark input-group-text" onClick={(e) => setNewInitial(null)}>Dodaj</span>
-                      </div>
+                      <button className="ms-1 btn btn-dark input-group-text" onClick={(e) => setNewInitial(null)}>Dodaj</button>
                     </div>}
                   </div>
                 </div>
@@ -251,6 +275,12 @@ const CategorizationLayout = ({userinfo} : {userinfo: UserInfo | null;}) => {
                         <span className="input-group-text">Treść zadania</span>
                       </div>
                       <input className="form-control" type="text" value="Liczba osób w jednostce"/>
+                    </div>
+                    <div className="input-group mb-1">
+                      <div className="input-group-prepend">
+                        <span className="input-group-text h-100">Opis zadania</span>
+                      </div>
+                      <textarea className="form-control" rows={3}/>
                     </div>
                     <div className="input-group mb-1">
                       <div className="input-group-prepend">
