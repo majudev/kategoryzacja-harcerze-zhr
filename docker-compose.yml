@@ -12,6 +12,9 @@ services:
 #    env_file:
 #      - backend/.env
     environment:
+      OAUTH_GOOGLE_ID:
+      OAUTH_GOOGLE_SECRET:
+      BASEURL: http://localhost:8080
       REDIS_URL: redis://redis:6379
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
       BCRYPT_ROUNDS: 11

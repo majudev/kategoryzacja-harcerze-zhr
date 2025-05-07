@@ -1,13 +1,22 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import translate from "../translator";
 import GoogleButton from "react-google-button";
+import React from "react";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
+function useQuery() {
+  const { search } = useLocation();
+
+  return React.useMemo(() => new URLSearchParams(search), [search]);
+}
+
 const Login = ({reloadHook} : {reloadHook : React.Dispatch<React.SetStateAction<boolean>>}) => {
   const navigate = useNavigate();
+
+  const query = useQuery();
 
   const [form, setForm] = useState({ email: "", password: "", captcha: "" });
   const [captchaSvg, setCaptchaSvg] = useState("");
@@ -49,11 +58,24 @@ const Login = ({reloadHook} : {reloadHook : React.Dispatch<React.SetStateAction<
     }
   };
 
+  function translateError(code: string, text: string): string {
+    if(code === "401"){
+      if(text === "invalid OAuth2 code provided") return "Otrzymano błędny kod OAuth2";
+      if(text === "authentication failed") return "Logowanie nieudane. Czy na pewno wybrałeś swoje konto @zhr.pl? Konta osobiste nie pozwalają się zalogować w ten sposób. Jeśli nie miałeś możliwości wyboru konta, otwórz w nowej karcie GMaila, zaloguj się na konto @zhr.pl i spróbuj zalogować się ponownie. Powinien pojawić się ekran wyboru konta.";
+    }else if(code === "500"){
+      if(text === "google provided unsupported reply") return "Google zwróciło dziwną odpowiedź, nie wiem co dalej zrobić. Skontaktuj się z administracją.";
+    }
+    return "Wystąpił błąd. Kod odpowiedzi: " + code + ". Wiadomość: " + text;
+  }
+
   return (
     <div className="d-flex vh-100 justify-content-center align-items-center angled-bg">
       <div className="card shadow p-4" style={{ width: "350px", zIndex: 1, position: "relative" }}>
         <h3 className="text-center mb-3">Zaloguj się</h3>
         {error && <div className="alert alert-danger">{translate(error)}</div>}
+        {
+          (query.get("status") === "error" ) ? <div className="alert alert-danger">{translateError(query.get("code") as string, query.get("message") as string)}</div> : <></>
+        }
         <div className="mt-3 d-flex justify-content-center">
             <GoogleButton label='Logowanie przez ZHR.pl' onClick={() => { window.location.href = process.env.REACT_APP_API_URL + '/auth/google'; }} />
         </div>

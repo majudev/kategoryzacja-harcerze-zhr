@@ -3,9 +3,12 @@ import { Router, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 import svgCaptcha from "svg-captcha";
+import googleapiRouter from "./googleapi";
 
 const router = Router();
 const prisma = new PrismaClient();
+
+router.use('/google', googleapiRouter);
 
 // User Registration
 router.get("/captcha", (req: Request, res: Response) => {
