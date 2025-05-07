@@ -61,6 +61,26 @@ const Districts = ({userinfo} : {userinfo: UserInfo | null; }) => {
     setNewDistrict({name: "", shadow: false, autoaccept: true});
   };
 
+  const shadowDistrict = async (districtId: number, shadow: boolean) => {
+    try {
+      const res = await axios.patch(`${API_ROOT}/admin/districts/${districtId}`, {
+        shadow: shadow,
+      });
+      updateDistricts();
+    } catch (err: any) {
+    }
+  };
+
+  const autoacceptDistrict = async (districtId: number, autoaccept: boolean) => {
+    try {
+      const res = await axios.patch(`${API_ROOT}/admin/districts/${districtId}`, {
+        autoaccept: autoaccept,
+      });
+      updateDistricts();
+    } catch (err: any) {
+    }
+  };
+
   return (
     <div className="row row-cols-1 row-cols-xl-2 g-4">
       <div key="nowa" className="col">
@@ -109,11 +129,11 @@ const Districts = ({userinfo} : {userinfo: UserInfo | null; }) => {
                       <input className="form-control" type="text" value={district.name}></input>
                     </div>*/}
                     <div className="form-check form-switch">
-                      <input className="form-check-input" type="checkbox" checked={district.shadow} />
+                      <input className="form-check-input" type="checkbox" checked={district.shadow} onClick={() => {shadowDistrict(district.id, !district.shadow)}} />
                       <label className="form-check-label">Ukryta</label>
                     </div>
                     <div className="form-check form-switch">
-                      <input className="form-check-input" type="checkbox" checked={district.autoaccept} />
+                      <input className="form-check-input" type="checkbox" checked={district.autoaccept} onClick={() => {autoacceptDistrict(district.id, !district.autoaccept)}} />
                       <label className="form-check-label">Pozwól zapisywać się do drużyn bez akceptacji</label>
                     </div>
                   </div>

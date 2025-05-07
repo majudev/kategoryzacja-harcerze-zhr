@@ -111,7 +111,6 @@ router.get('/by-district-id/:districtId', async (req: Request, res: Response) =>
     const teams = await prisma.team.findMany({
         where: {
             districtId: districtId,
-            shadow: false,
         },
         select: {
             id: true,

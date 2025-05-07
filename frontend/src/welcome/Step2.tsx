@@ -8,7 +8,7 @@ const API_ROOT = process.env.REACT_APP_API_URL;
 const WelcomeStep2 = ({setStep, districts, district, setDistrict} : {setStep: React.Dispatch<React.SetStateAction<any>>; districts: Array<{id: number; name: string;}>; district: string; setDistrict: React.Dispatch<React.SetStateAction<string>>}) => {
   const [loading, setLoading] = useState(false);
 
-  const [teams, setTeams] = useState<Array<{id: number; name: string;}>>([]);
+  const [teams, setTeams] = useState<Array<{id: number; name: string; shadow: boolean;}>>([]);
   const [error, setError] = useState("");
 
   //const [district, setDistrict] = useState("none");
@@ -69,7 +69,7 @@ const WelcomeStep2 = ({setStep, districts, district, setDistrict} : {setStep: Re
               <option value="none" disabled>Wybierz jednostkę...</option>
               {
                 teams.map((team) => {
-                  return <option value={team.id}>{team.name}</option>;
+                  return <option value={team.id} disabled={team.shadow}>{team.name}</option>;
                 })
               }
             </select>
@@ -78,6 +78,7 @@ const WelcomeStep2 = ({setStep, districts, district, setDistrict} : {setStep: Re
           <div className="d-flex justify-content-between">
             {team !== "none" && <button type="submit" className="btn btn-primary m-1" disabled={loading}>Daj mi dostęp do {teamName}</button>}
             <button className="btn btn-primary m-1" onClick={() => setStep("3")} disabled={loading}>Mojej jednostki nie ma na liście</button>
+            <small><i>Jeżeli Twoja jednostka znajduje się na liście, ale nie można w nią kliknąć - skontaktuj się z koordynatorem kategoryzacji w Twojej Chorągwi. Nie klikaj w przycisk "Mojej jednostki nie ma na liście".</i></small>
           </div>
         </>}
       </form>

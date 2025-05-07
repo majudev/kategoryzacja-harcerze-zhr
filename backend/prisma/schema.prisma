@@ -131,6 +131,7 @@ enum CategorizationTaskType {
 model CategorizationTask {
   id          Int @id @default(autoincrement())
   name        String
+  description String? @db.Text
   primaryGroupId      Int
   primaryGroup        CategorizationTaskGroup @relation("ctasks_group_primary", fields: [primaryGroupId], references: [id])
   secondaryGroupId    Int?
@@ -156,6 +157,7 @@ model CategorizationTask {
 model InitialTask {
   id          Int @id @default(autoincrement())
   name        String
+  description String? @db.Text
   categorizationYearId  Int
   categorizationYear    CategorizationYear @relation(fields: [categorizationYearId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
