@@ -45,19 +45,10 @@ router.get('/', async (req: Request, res: Response) => {
                         }
                     },
                     shadow: true,
+                    locked: true,
                 }
             },
             teamAccepted: true,
-
-            _count: {
-                select: {
-                    notifications: {
-                        where: {
-                            unread: true,
-                        }
-                    }
-                },
-            }
         }
     });
 
@@ -70,13 +61,10 @@ router.get('/', async (req: Request, res: Response) => {
         ...user,
         activationKey: undefined,
         activated: user.activationKey === null,
-
-        hasNotifications: user._count.notifications > 0,
-        _count: undefined,
     });
 });
 
-router.patch('/grant-team-access/:userId', async (req: Request, res: Response) => {
+/*router.patch('/grant-team-access/:userId', async (req: Request, res: Response) => {
     const userId = Number.parseInt(req.params.userId);
 
     if(isNaN(userId)){
@@ -118,6 +106,6 @@ router.patch('/grant-team-access/:userId', async (req: Request, res: Response) =
     });
 
     res.status(204).end();
-});
+});*/
 
 export default router;

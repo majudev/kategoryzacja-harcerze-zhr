@@ -115,7 +115,8 @@ router.post('/', async (req: Request, res: Response) => {
           createdAt: true,
           teamAccepted: true,
         }
-      }
+      },
+      locked: true,
     }
   });
 
@@ -123,9 +124,9 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 router.patch('/:teamId', async (req: Request, res: Response) => {
-  let { name, shadow, districtId } = req.body;
+  let { name, shadow, districtId, locked } = req.body;
 
-  if (((!name || typeof name !== 'string') && (districtId === undefined || typeof districtId !== 'number') && (typeof shadow !== 'boolean'))) {
+  if (((!name || typeof name !== 'string') && (districtId === undefined || typeof districtId !== 'number') && (typeof shadow !== 'boolean') && (typeof locked !== 'boolean'))) {
     res.status(400).json({ status: "error", message: "patch body required" });
     return;
   }
@@ -162,6 +163,7 @@ router.patch('/:teamId', async (req: Request, res: Response) => {
       name: name,
       shadow: shadow,
       districtId: districtId,
+      locked: locked,
     },
     where: {
       id: teamId,
@@ -179,7 +181,8 @@ router.patch('/:teamId', async (req: Request, res: Response) => {
           createdAt: true,
           teamAccepted: true,
         }
-      }
+      },
+      locked: true,
     }
   });
 

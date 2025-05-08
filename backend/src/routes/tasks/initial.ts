@@ -108,19 +108,28 @@ router.post('/:action(mark|unmark)/:taskId', async (req: Request, res: Response)
     select: {
         teamId: true,
         teamAccepted: true,
+        team: {
+          select: {
+            locked: true,
+          }
+        }
     }
   });
   if(!user){ // should never happen
       res.status(500).end();
       return;
   }
-  if(user.teamId === null){
+  if(user.teamId === null || user.team === null){
     res.status(404).json({ message: "you have not yet registered your team" });
     return;
   }
   if(!user.teamAccepted){
       res.status(403).json({ message: "you don't have permission to view this team" });
       return;
+  }
+  if(user.team.locked){
+    res.status(409).json({ message: "your team is locked" });
+    return;
   }
   const teamId = user.teamId;
 

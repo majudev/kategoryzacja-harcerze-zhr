@@ -11,7 +11,7 @@ import { UserInfo, Category as CategoryType } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const CategoryLayout = ({category: cat, myTasksMode, toggleMyTask, updateTask} : {category: CategoryType; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void}) => {
+const CategoryLayout = ({category: cat, myTasksMode, toggleMyTask, updateTask, locked} : {category: CategoryType; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void; locked: boolean}) => {
   const collectedSplitPoints = cat.tasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.points : t.secondaryGroupId === cat.id ? t.secondaryPoints as number : t.primaryPoints as number), 0);
   const maxSplitPoints = cat.tasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === cat.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
   const maxFilteredSplitPoints = cat.tasks.filter(t => t.favourite).reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === cat.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
@@ -35,6 +35,7 @@ const CategoryLayout = ({category: cat, myTasksMode, toggleMyTask, updateTask} :
                   checked={task.value > 0}
                   style={{ padding: '5px', marginLeft: '11px', marginRight: '27px', marginTop: '0px', height: '1.25em', width: '1.25em' }}
                   onChange={(e) => updateTask(task.id, e.target.checked ? '1' : '0')}
+                  disabled={locked}
                 />
                 :
                 <input
@@ -44,6 +45,7 @@ const CategoryLayout = ({category: cat, myTasksMode, toggleMyTask, updateTask} :
                   placeholder="..."
                   style={{ width: '42px' }}
                   onChange={(e) => updateTask(task.id, e.target.value)}
+                  disabled={locked}
                 />
                 }
                 <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
@@ -56,7 +58,7 @@ const CategoryLayout = ({category: cat, myTasksMode, toggleMyTask, updateTask} :
                 </span>
                 <button 
                   className="btn p-0 ms-2 d-inline-flex align-items-center"
-                  onClick={() => {if(!task.obligatory) toggleMyTask(task.id, !task.favourite)}}
+                  onClick={() => {if(!task.obligatory && !locked) toggleMyTask(task.id, !task.favourite)}}
                 >
                   {task.obligatory && <small className="me-1" style={{ fontSize: "0.7em", fontWeight: "bold" }}>obowiązkowe</small>}
                   <i className={`bi bi-star${task.favourite ? '-fill' : ''} ${task.favourite ? 'text-warning' : 'text-secondary'}`} />

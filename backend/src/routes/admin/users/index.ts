@@ -51,7 +51,8 @@ router.get('/', async (req: Request, res: Response) => {
             select: {
               name: true,
             }
-          }
+          },
+          locked: true,
         }
       },
       teamAccepted: true,

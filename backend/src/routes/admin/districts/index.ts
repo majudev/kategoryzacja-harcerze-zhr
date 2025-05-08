@@ -62,7 +62,8 @@ router.get('/:districtId?', async (req: Request, res: Response) => {
               createdAt: true,
               teamAccepted: true,
             }
-          }
+          },
+          locked: true,
         }
       }
     },
@@ -128,7 +129,8 @@ router.post('/', async (req: Request, res: Response) => {
               createdAt: true,
               teamAccepted: true,
             }
-          }
+          },
+          locked: true,
         }
       }
     }
@@ -195,7 +197,8 @@ router.patch('/:districtId', async (req: Request, res: Response) => {
               createdAt: true,
               teamAccepted: true,
             }
-          }
+          },
+          locked: true,
         }
       }
     }

@@ -8,7 +8,7 @@ import { CategorizationDetails, Category, UserInfo } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const StatsBar = ({categorizationDetails, categories, myTasksMode} : {categorizationDetails: CategorizationDetails|undefined; categories: Array<Category>; myTasksMode: boolean}) => {
+const StatsBar = ({categorizationDetails, categories, myTasksMode, locked} : {categorizationDetails: CategorizationDetails|undefined; categories: Array<Category>; myTasksMode: boolean; locked: boolean}) => {
     const allTasks = categories.flatMap(cat => cat.tasks);
     const uniqueTasks = Array.from(
       new Map(allTasks.map(task => [task.id, task])).values()
@@ -131,6 +131,14 @@ const StatsBar = ({categorizationDetails, categories, myTasksMode} : {categoriza
             </div>
           </div>
         </div>*/}
+        
+        {locked && <div className="col-12">
+          <div className="card shadow-sm border-0 h-100">
+            <div className="card-body">
+              <h5 className="text-center mb-3">Twój arkusz został zatwierdzony przez administratora i nie możesz go już edytować.</h5>
+            </div>
+          </div>
+        </div>}
       </div>
     );
   };

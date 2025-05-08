@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const InitialTasksLayout = ({tasks, toggleInitialTask} : {tasks: Array<Task>; toggleInitialTask: (taskId: number, state: boolean) => void}) => {
+const InitialTasksLayout = ({tasks, toggleInitialTask, locked} : {tasks: Array<Task>; toggleInitialTask: (taskId: number, state: boolean) => void; locked: boolean}) => {
   const [showTaskMap, setShowTaskMap] = useState(new Map<number, boolean>());
 
     return (
@@ -22,6 +22,7 @@ const InitialTasksLayout = ({tasks, toggleInitialTask} : {tasks: Array<Task>; to
                   className="form-check-input me-3 flex-shrink-0"
                   checked={task.value > 0}
                   onChange={() => toggleInitialTask(task.id, !task.value)}
+                  disabled={locked}
                 />
                 <span className={`flex-grow-1`}>
                   <span className={`${task.value ? 'text-muted text-decoration-line-through' : ''}`}>{task.name}</span>

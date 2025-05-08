@@ -22,6 +22,7 @@ export interface District {
           lastLogin: string;
           teamAccepted: boolean;
       }[];
+      locked: boolean;
   }[];
   admins: {
     id: number;

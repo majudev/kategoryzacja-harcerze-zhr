@@ -10,7 +10,7 @@ import { Category, UserInfo } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const SummaryLayout = ({categories, myTasksMode, toggleMyTask, updateTask} : {categories: Array<Category>; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void}) => {
+const SummaryLayout = ({categories, myTasksMode, toggleMyTask, updateTask, locked} : {categories: Array<Category>; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void; locked: boolean}) => {
     return (
       <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
         {categories.map((category) => {
@@ -38,6 +38,7 @@ const SummaryLayout = ({categories, myTasksMode, toggleMyTask, updateTask} : {ca
                           checked={task.value > 0}
                           style={{ padding: '5px', marginLeft: '11px', marginRight: '27px', marginTop: '0px', height: '1.25em', width: '1.25em' }}
                           onChange={(e) => updateTask(task.id, e.target.checked ? '1' : '0')}
+                          disabled={locked}
                         />
                         :
                         <input
@@ -47,6 +48,7 @@ const SummaryLayout = ({categories, myTasksMode, toggleMyTask, updateTask} : {ca
                           placeholder="..."
                           style={{ width: '42px' }}
                           onChange={(e) => updateTask(task.id, e.target.value)}
+                          disabled={locked}
                         />
                         }
                         <span
@@ -56,7 +58,7 @@ const SummaryLayout = ({categories, myTasksMode, toggleMyTask, updateTask} : {ca
                         </span>
                         <i
                           className={`bi bi-star${task.favourite ? '-fill' : ''} text-warning fs-5`}
-                          onClick={() => {if(!task.obligatory) toggleMyTask(task.id, !task.favourite)}}
+                          onClick={() => {if(!task.obligatory && !locked) toggleMyTask(task.id, !task.favourite)}}
                           style={{ cursor: 'pointer' }}
                         />
                       </li>

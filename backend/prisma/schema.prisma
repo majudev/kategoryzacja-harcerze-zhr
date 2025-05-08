@@ -63,7 +63,7 @@ model Team {
   initialTasks InitialTaskJoint[]
   tasks       TaskJoint[]
 
-  lockedCategorizationYears  CategorizationLock[]
+  locked      Boolean @default(false)
 
   @@index([shadow])
   @@index([districtId])
@@ -104,8 +104,6 @@ model CategorizationYear {
 
   initialTasks InitialTask[]
   taskGroup    CategorizationTaskGroup[]
-
-  lockedTeams  CategorizationLock[]
 
   ranking      Ranking?
 }
@@ -198,16 +196,6 @@ model InitialTaskJoint {
   @@id([taskId, teamId])
   @@index([teamId])
   //@@index([teamId, value])
-}
-
-model CategorizationLock {
-  categorizationYearId      Int
-  categorizationYear        CategorizationYear @relation(fields: [categorizationYearId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  teamId      Int
-  team        Team @relation(fields: [teamId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-
-  @@id([categorizationYearId, teamId])
-  @@index([teamId])
 }
 
 model Ranking {

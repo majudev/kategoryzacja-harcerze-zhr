@@ -71,6 +71,7 @@ export interface UserInfo {
   team: {
     id: number;
     name: string;
+    locked: boolean;
   }|null;
   teamAccepted: boolean;
 }
@@ -102,6 +103,8 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
     const [categorizationDetails, setCategorizationDetails] = useState<CategorizationDetails>();
     const [initialTasklist, setInitialTasklist] = useState<Array<Task>>([]);
     const [tasklist, setTasklist] = useState<Array<Category>>([]);
+
+    const locked = userinfo !== null && userinfo.team !== null && userinfo.team.locked;
 
     const updateCategorizationDetails = async () => {
       try {
@@ -253,18 +256,18 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
 
               {/* Top Stats Cards */}
               {!(initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length) && 
-                <StatsBar categorizationDetails={categorizationDetails} categories={tasklist} myTasksMode={showStarredOnly} />
+                <StatsBar categorizationDetails={categorizationDetails} categories={tasklist} myTasksMode={showStarredOnly} locked={locked} />
               }
 
               {/* Task List */}
               <div className="task-list">
                 {activeCategory === 0 ?
-                  <SummaryLayout categories={tasklist} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask}/>
+                  <SummaryLayout categories={tasklist} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask} locked={locked} />
                   : activeCategory === -1 ?
-                  <InitialTasksLayout tasks={initialTasklist} toggleInitialTask={toggleInitialTask}/>
+                  <InitialTasksLayout tasks={initialTasklist} toggleInitialTask={toggleInitialTask} locked={locked} />
                   :
                   renderableCategories.filter((cat) => cat.id === activeCategory).map((cat) =>
-                    <CategoryLayout category={cat} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask}/>
+                    <CategoryLayout category={cat} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask} locked={locked} />
                   )
                 }
               </div>
