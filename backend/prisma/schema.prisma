@@ -31,6 +31,8 @@ model User {
   createdAt   DateTime @default(now())
   lastLogin   DateTime @default(now())
 
+  notifications Notification[]
+
   role        UserRole @default(USER)
   districtAdminId Int?
   districtAdmin   District? @relation(fields: [districtAdminId], references: [id], onUpdate: Cascade, onDelete: Restrict)
@@ -60,6 +62,8 @@ model Team {
 
   initialTasks InitialTaskJoint[]
   tasks       TaskJoint[]
+
+  lockedCategorizationYears  CategorizationLock[]
 
   @@index([shadow])
   @@index([districtId])
@@ -100,6 +104,8 @@ model CategorizationYear {
 
   initialTasks InitialTask[]
   taskGroup    CategorizationTaskGroup[]
+
+  lockedTeams  CategorizationLock[]
 
   ranking      Ranking?
 }
@@ -194,9 +200,32 @@ model InitialTaskJoint {
   //@@index([teamId, value])
 }
 
+model CategorizationLock {
+  categorizationYearId      Int
+  categorizationYear        CategorizationYear @relation(fields: [categorizationYearId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  teamId      Int
+  team        Team @relation(fields: [teamId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@id([categorizationYearId, teamId])
+  @@index([teamId])
+}
+
 model Ranking {
   categorizationYearId  Int @id
   categorizationYear    CategorizationYear @relation(fields: [categorizationYearId], references: [id])
 
   JSON                  String @db.Text
+}
+
+model Notification {
+  id      Int @id @default(autoincrement())
+
+  userId  Int
+  user    User @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  text    String @db.TinyText
+  unread  Boolean @default(true)
+  time    DateTime @default(now())
+
+  @@index([unread])
 }

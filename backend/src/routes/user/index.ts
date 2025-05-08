@@ -1,9 +1,12 @@
 import { Router, Request, Response } from "express";
 
 import { PrismaClient } from "@prisma/client";
+import notificationsRouter from "./notifications";
 
 const router = Router();
 const prisma = new PrismaClient();
+
+router.use('/notifications', notificationsRouter);
 
 router.get('/', async (req: Request, res: Response) => {
     if(!req.session.userId){
@@ -45,6 +48,16 @@ router.get('/', async (req: Request, res: Response) => {
                 }
             },
             teamAccepted: true,
+
+            _count: {
+                select: {
+                    notifications: {
+                        where: {
+                            unread: true,
+                        }
+                    }
+                },
+            }
         }
     });
 
@@ -57,6 +70,9 @@ router.get('/', async (req: Request, res: Response) => {
         ...user,
         activationKey: undefined,
         activated: user.activationKey === null,
+
+        hasNotifications: user._count.notifications > 0,
+        _count: undefined,
     });
 });
 

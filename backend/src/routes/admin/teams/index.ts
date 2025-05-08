@@ -206,6 +206,7 @@ router.patch('/:action(grant|revoke)/:userId/on/:teamId', async (req: Request, r
       id: teamId,
     },
     select: {
+      name: true,
       districtId: true,
     }
   });
@@ -243,6 +244,12 @@ router.patch('/:action(grant|revoke)/:userId/on/:teamId', async (req: Request, r
         id: userId,
       },
     });
+    await prisma.notification.create({
+      data: {
+          userId: userId,
+          text: "Dostałeś uprawnienia do drużyny " + team.name + ".",
+      }
+    });
   }else{
     // Revoke permissions
     await prisma.user.update({
@@ -253,6 +260,12 @@ router.patch('/:action(grant|revoke)/:userId/on/:teamId', async (req: Request, r
       where: {
         id: userId,
       },
+    });
+    await prisma.notification.create({
+      data: {
+          userId: userId,
+          text: "Straciłeś uprawnienia do drużyny " + team.name + ".",
+      }
     });
   }
 

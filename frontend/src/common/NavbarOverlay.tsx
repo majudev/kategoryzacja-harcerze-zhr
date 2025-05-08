@@ -1,6 +1,7 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import NiceNavLink from "./NiceNavLink";
+import NotificationsPopup from "./NotificationsPopup";
 
 const NavbarOverlay = ({ userinfo, children } : {children: ReactNode; userinfo: {role: "USER"|"DISTRICT_COORDINATOR"|"TOPLEVEL_COORDINATOR"|"ADMIN"; districtAdmin: {id: number; name: string;} | null} | null}) => {
   return (
@@ -32,6 +33,7 @@ const NavbarOverlay = ({ userinfo, children } : {children: ReactNode; userinfo: 
                 <NiceNavLink to="/admin">Panel Administratora</NiceNavLink>
               </li>}
             </ul>
+            {userinfo && <NotificationsPopup userinfo={userinfo} />}
             {
               userinfo === null ?
               <Link className="btn btn-outline-light me-2" to="/login">Zaloguj się</Link>

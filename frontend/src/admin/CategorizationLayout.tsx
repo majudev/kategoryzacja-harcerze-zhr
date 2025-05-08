@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import translate from "../translator";
 import NavbarOverlay from "../common/NavbarOverlay";
 import 'bootstrap/js/dist/tab';
+import 'bootstrap/js/dist/modal';
 import { UserInfo } from "../App";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
@@ -45,7 +46,7 @@ const CategorizationLayout = ({userinfo} : {userinfo: UserInfo | null;}) => {
               <div className="card-body">
                 <h5 className="text-muted mb-3">Dla odważnych</h5>
                 <div className="form-check form-switch">
-                    <input className="form-check-input" type="checkbox" checked={nuclearmode} onChange={(e) => setNuclearmode(e.target.checked)}/>
+                    <input className="form-check-input" type="checkbox" checked={nuclearmode} onChange={(e) => {if(!e.target.checked) setNuclearmode(e.target.checked); else document.getElementById('openNuclearModeModal')?.click();}}/>
                     <label className="form-check-label text-danger">Tryb atomowy</label>
                   </div>
               </div>
@@ -187,7 +188,8 @@ const CategorizationLayout = ({userinfo} : {userinfo: UserInfo | null;}) => {
                           <textarea className="form-control"/>
                         </div>
                       </div>
-                      <button className="ms-1 btn btn-danger input-group-text">Usuń</button>
+                      <button className="ms-1 btn btn-dark">Zapisz zmiany</button>
+                      <button className="ms-1 btn btn-danger">Usuń</button>
                     </div>
                     <div className="d-flex mb-3">
                       <div className="w-100">
@@ -204,7 +206,8 @@ const CategorizationLayout = ({userinfo} : {userinfo: UserInfo | null;}) => {
                           <textarea className="form-control"/>
                         </div>
                       </div>
-                      <button className="ms-1 btn btn-danger input-group-text">Usuń</button>
+                      <button className="ms-1 btn btn-dark">Zapisz zmiany</button>
+                      <button className="ms-1 btn btn-danger">Usuń</button>
                     </div>
                   </div>
                   <div className="list-group-item text-center">
@@ -224,7 +227,7 @@ const CategorizationLayout = ({userinfo} : {userinfo: UserInfo | null;}) => {
                           <textarea className="form-control" value={newInitial.description} onChange={(e) => setNewInitial({...newInitial, description: e.target.value})}/>
                         </div>
                       </div>
-                      <button className="ms-1 btn btn-dark input-group-text" onClick={(e) => setNewInitial(null)}>Dodaj</button>
+                      <button className="ms-1 btn btn-dark" onClick={(e) => setNewInitial(null)}>Dodaj</button>
                     </div>}
                   </div>
                 </div>
@@ -340,6 +343,27 @@ const CategorizationLayout = ({userinfo} : {userinfo: UserInfo | null;}) => {
             </div>
           </div>
         </div>
+
+        <div className="modal fade" id="nuclearModeModal" tabIndex={-1} aria-hidden="true">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">CZY NA PEWNO?</h5>
+                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div className="modal-body">
+                <p><i>Wolniej, wolniej, wstrzymaj konia...</i></p>
+                <p><b>TRYB ATOMOWY</b> pozwoli Ci robić rzeczy, których nie powinieneś robić. Nie powinieneś usuwać zadań z trwającej kategoryzacji, nie powinieneś przeliczać rankingu w zamkniętej kategoryzacji, i paru innych rzeczy też nie powinieneś robić...</p>
+                <p>Jeśli nie jesteś absolutnie pewny swoich działań, zawróć póki nic nie zepsułeś.</p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-danger" data-bs-dismiss="modal" onClick={(e) => setNuclearmode(true)}>POZWÓL MI POPEŁNIAĆ BŁĘDY</button>
+                <button type="button" className="btn btn-dark" data-bs-dismiss="modal">Wychodzę</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="openNuclearModeModal" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#nuclearModeModal"/>
       </>
     );
   };

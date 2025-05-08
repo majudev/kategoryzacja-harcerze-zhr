@@ -57,6 +57,7 @@ router.post('/', async (req: Request, res: Response) => {
         return;
     }
 
+    // Create the team
     const team = await prisma.$transaction(async (tx) => {
         // We first update the acceptation to prevent doubling of the select query
         await tx.user.update({
@@ -84,12 +85,42 @@ router.post('/', async (req: Request, res: Response) => {
                 owners: {
                     select: {
                         id: true,
+                        email: true,
                         teamAccepted: true,
                     }
                 },
                 districtId: true,
             }
         });
+    });
+
+    // Send notification to district coordinators
+    const notificationText = district.autoaccept ? 
+        "Użytkownik " + team.owners[0].email + " utworzył w twojej chorągwi drużynę " + team.name + " i została ona automatycznie zatwierdzona."
+        :
+        "Użytkownik " + team.owners[0].email + " utworzył w twojej chorągwi drużynę " + team.name + ". Aby zaakceptować ją lub usunąć, przejdź do panelu administratora.";
+    const district_coordinators = await prisma.user.findMany({
+        where: {
+            districtAdminId: team.districtId,
+        },
+        select: {
+            id: true,
+        }
+    });
+    district_coordinators.length > 0 && await prisma.notification.createMany({
+        data: district_coordinators.map(coordinator => {
+            return {
+                userId: coordinator.id,
+                text: notificationText,
+            }
+        })
+    });
+
+    await prisma.notification.create({
+        data: {
+            userId: req.session.userId,
+            text: "Utworzyłeś w systemie drużynę " + team.name,
+        }
     });
 
     res.status(200).json(team);
@@ -177,5 +208,146 @@ router.get('/', async (req: Request, res: Response) => {
 
     res.status(200).json(user.team);
 });
+
+router.patch('/grant/:userId', async (req: Request, res: Response) => {
+  const userId = Number.parseInt(req.params.userId);
+  if(Number.isNaN(userId)){
+    res.status(400).json({ status: "error", message: "invalid user id" });
+    return;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+        id: req.session.userId,
+    },
+    select: {
+        teamId: true,
+        teamAccepted: true,
+        team: {
+            select: {
+                name: true,
+            }
+        }
+    }
+  });
+
+  if(user === null){ // Should never happen
+    res.status(500).json({ status: "error", message: "user not found" });
+    return;
+  }
+
+  if(user.teamId === null || user.team === null || !user.teamAccepted){
+    res.status(404).json({ status: "error", message: "team not found" });
+    return;
+  }
+
+  // Grant permissions
+  await prisma.user.updateMany({
+    data: {
+      teamAccepted: true,
+    },
+    where: {
+      id: userId,
+      teamId: user.teamId,
+    },
+  });
+  await prisma.notification.create({
+    data: {
+        userId: userId,
+        text: "Dostałeś uprawnienia do drużyny " + user.team.name + ".",
+    }
+  });
+  ///TODO: send e-mail
+
+  res.status(204).end();
+});
+
+router.get('/ask-access/:teamId', async (req: Request, res: Response) => {
+    const teamId = Number.parseInt(req.params.teamId);
+    if(Number.isNaN(teamId)){
+      res.status(400).json({ status: "error", message: "invalid team id" });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+        where: {
+            id: req.session.userId,
+        },
+        select: {
+            id: true,
+            email: true,
+        }
+    });
+    if(user === null){ //Should never happen
+      res.status(500).json({ status: "error", message: "user not found" });
+      return;
+    }
+  
+    const team = await prisma.team.findUnique({
+      where: {
+          id: teamId,
+      },
+      select: {
+          id: true,
+          name: true,
+          owners: {
+            select: {
+                id: true,
+                teamAccepted: true,
+            }
+          },
+          district: {
+            select: {
+                admins: {
+                    select: {
+                        id: true,
+                    }
+                }
+            }
+          },
+          shadow: true,
+      }
+    });
+  
+    if(team === null || team.shadow){
+      res.status(404).json({ status: "error", message: "team not found" });
+      return;
+    }
+  
+    // Grant permissions
+    await prisma.user.updateMany({
+      data: {
+        teamId: teamId,
+      },
+      where: {
+        id: req.session.userId,
+      },
+    });
+
+    // Send notification with access request
+    const userNotificationText = "Użytkownik " + user.email + " chce uzyskać dostęp do Twojej drużyny. [GRANT_ACCESS=" + user.id + "]";
+    team.owners.length > 0 && await prisma.notification.createMany({
+        data: team.owners.map(owner => {
+            return {
+                userId: owner.id,
+                text: userNotificationText,
+            }
+        })
+    });
+    ///TODO: send e-mail
+
+    // Send notification to district coordinators
+    /*const coordinatorNotificationText = "Użytkownik " + user.email + " chce uzyskać dostęp do drużyny " + team.name + ". [GRANT_ACCESS=" + user.id + "]";
+    team.district.admins.length > 0 && await prisma.notification.createMany({
+        data: team.district.admins.map(coordinator => {
+            return {
+                userId: coordinator.id,
+                text: coordinatorNotificationText,
+            }
+        })
+    });*/
+
+    res.status(204).end();
+  });
 
 export default router;
