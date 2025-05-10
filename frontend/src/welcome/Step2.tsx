@@ -75,10 +75,10 @@ const WelcomeStep2 = ({setStep, districts, district, setDistrict} : {setStep: Re
             </select>
           </div>
 
-          <div className="d-flex justify-content-between">
+          <div className="d-flex justify-content-between flex-column">
             {team !== "none" && <button type="submit" className="btn btn-primary m-1" disabled={loading}>Daj mi dostęp do {teamName}</button>}
-            <button className="btn btn-primary m-1" onClick={() => setStep("3")} disabled={loading}>Mojej jednostki nie ma na liście</button>
-            <small><i>Jeżeli Twoja jednostka znajduje się na liście, ale nie można w nią kliknąć - skontaktuj się z koordynatorem kategoryzacji w Twojej Chorągwi. Nie klikaj w przycisk "Mojej jednostki nie ma na liście".</i></small>
+            <button className="btn btn-primary mb-1" onClick={() => setStep("3")} disabled={loading}>Mojej jednostki nie ma na liście</button>
+            <small><i>Jeżeli Twoja jednostka znajduje się na liście, ale nie można w nią kliknąć - skontaktuj się z koordynatorem kategoryzacji w Twojej Chorągwi. <b>Nie klikaj</b> w przycisk "Mojej jednostki nie ma na liście".</i></small>
           </div>
         </>}
       </form>
