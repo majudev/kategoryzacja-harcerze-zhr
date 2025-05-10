@@ -2,15 +2,41 @@ services:
   frontend:
     build: frontend
     restart: always
-#    env_file:
-#      - frontend/.env
     environment:
       REACT_APP_API_URL: http://localhost:8080/api
-  backend:
+  backend-w1:
     build: backend
     restart: always
-#    env_file:
-#      - backend/.env
+    environment:
+      OAUTH_GOOGLE_ID:
+      OAUTH_GOOGLE_SECRET:
+      BASEURL: http://localhost:8080
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
+      BCRYPT_ROUNDS: 11
+  backend-w2:
+    build: backend
+    restart: always
+    environment:
+      OAUTH_GOOGLE_ID:
+      OAUTH_GOOGLE_SECRET:
+      BASEURL: http://localhost:8080
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
+      BCRYPT_ROUNDS: 11
+  backend-w3:
+    build: backend
+    restart: always
+    environment:
+      OAUTH_GOOGLE_ID:
+      OAUTH_GOOGLE_SECRET:
+      BASEURL: http://localhost:8080
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
+      BCRYPT_ROUNDS: 11
+  backend-w4:
+    build: backend
+    restart: always
     environment:
       OAUTH_GOOGLE_ID:
       OAUTH_GOOGLE_SECRET:
