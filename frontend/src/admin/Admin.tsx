@@ -269,7 +269,7 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
               </>
               :
               <>
-                <CategorizationLayout userinfo={userinfo} />
+                <CategorizationLayout userinfo={userinfo} categorizationId={activeCategorization} />
                 {/* Top Stats Cards */}
                 {/*!(initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length) && 
                   <StatsBar categorizationDetails={categorizationDetails} userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} />
