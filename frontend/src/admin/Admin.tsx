@@ -8,6 +8,8 @@ import Districts from "./Districts";
 import Teams from "./Teams";
 import Users from "./Users";
 import CategorizationLayout from "./CategorizationLayout";
+import ToplevelCoordinators from "./ToplevelCoordinators";
+import Administrators from "./Administrators";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -45,6 +47,7 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
             }
 
             updateCategorizations();
+            updateUsers();
         }else{
           setAvailableMenus([{id: -100, name: "Ładowanie...", level: "DISTRICT"}]);
           setActiveMenu(-100);
@@ -69,7 +72,12 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
       },
       {
         id: 80,
-        name: "Administracyjne",
+        name: "Koordynatorzy krajowi",
+        level: "TOPLEVEL" as ('TOPLEVEL'|'DISTRICT'|'UBER'),
+      },
+      {
+        id: 90,
+        name: "Administratorzy",
         level: "UBER" as ('TOPLEVEL'|'DISTRICT'|'UBER'),
       },
     ];
@@ -89,6 +97,8 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
 
     const [displayState, setDisplayState] = useState<'SETTINGS'|'CATEGORIZATIONS'>('SETTINGS');
 
+    const [users, setUsers] = useState<Array<{id: number; email: string}>>([]);
+
     useEffect(() => {
       if(availableMenus.find((v) => v.id === activeMenu) === undefined){
         if(availableMenus.length > 0) setActiveMenu(availableMenus[0].id);
@@ -100,6 +110,15 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
         if(availableCategorizations.length > 0) setActiveCategorization(availableCategorizations[0].id);
       }
     }, [availableCategorizations]);
+
+    const updateUsers = async () => {
+      try {
+        const res = await axios.get(`${API_ROOT}/admin/users/shallow`);
+        setUsers(res.data);
+      } catch (err: any) {
+        setUsers([]);
+      }
+    };
 
     const updateCategorizations = async () => {
       try {
@@ -242,9 +261,11 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
 
               {displayState === "SETTINGS" ? 
               <>
-                {activeMenu === 50 && <Districts userinfo={userinfo} />}
-                {activeMenu === 60 && <Teams userinfo={userinfo} />}
+                {activeMenu === 50 && <Districts userinfo={userinfo} users={users} />}
+                {activeMenu === 60 && <Teams userinfo={userinfo} users={users} />}
                 {activeMenu === 70 && <Users userinfo={userinfo} />}
+                {activeMenu === 80 && <ToplevelCoordinators userinfo={userinfo} users={users} />}
+                {activeMenu === 90 && <Administrators userinfo={userinfo} users={users} />}
               </>
               :
               <>

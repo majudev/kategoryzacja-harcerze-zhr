@@ -32,7 +32,7 @@ export interface District {
   }[];
 };
 
-const Districts = ({userinfo} : {userinfo: UserInfo | null; }) => {
+const Districts = ({userinfo, users} : {userinfo: UserInfo | null; users: Array<{id: number; email: string}>}) => {
   useEffect(() => {
     if(userinfo !== null){
       updateDistricts();
@@ -41,6 +41,7 @@ const Districts = ({userinfo} : {userinfo: UserInfo | null; }) => {
 
   const [districts, setDistricts] = useState<Array<District>>([]);
   const [newDistrict, setNewDistrict] = useState<{name: string; shadow: boolean; autoaccept: boolean;}>({name: "", shadow: false, autoaccept: true});
+  const [newAccessGrants, setNewAccessGrant] = useState(new Map<number,{filtertext: string; show: boolean;}>());
 
   const updateDistricts = async () => {
     try {
@@ -77,6 +78,15 @@ const Districts = ({userinfo} : {userinfo: UserInfo | null; }) => {
       const res = await axios.patch(`${API_ROOT}/admin/districts/${districtId}`, {
         autoaccept: autoaccept,
       });
+      updateDistricts();
+    } catch (err: any) {
+    }
+  };
+
+  const makeDistrictAdmin = async (districtId: number, userId: number, access: boolean) => {
+    try {
+      const permissions = (access ? "DISTRICT_COORDINATOR" : "USER");
+      const res = await axios.patch(`${API_ROOT}/admin/users/${userId}/permissions/${permissions}/${districtId}`);
       updateDistricts();
     } catch (err: any) {
     }
@@ -139,50 +149,36 @@ const Districts = ({userinfo} : {userinfo: UserInfo | null; }) => {
                     </div>
                   </div>
                 </div>
-                {/*<div className="list-group">
-                  <h3 className="text-center mt-1">Drużyny</h3>
-                  {district.teams.map((team) => <div key={team.id} className="list-group-item" style={{borderBottomLeftRadius: '0', borderBottomRightRadius: '0'}}>
-                    <div className="d-flex align-items-between mb-2">
-                      <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                        <b>{team.name}</b> {team.shadow && <i> (wyłączona)</i>}<br/>
-                        <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Utworzono: {(new Date(team.createdAt)).toLocaleDateString('pl')}</small>
-                      </span>
-                      {!team.shadow ? <button className="btn btn-sm btn-danger">Wyłącz</button> : <button className="btn btn-sm btn-dark">Włącz</button>}
-                    </div>
-                    <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                      Dostęp mają:
-                      <ul className="mb-0">
-                        {team.owners.filter((u) => u.teamAccepted).map((user) => <li><div className="d-flex align-items-between">
-                          <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                            {user.email} <br/>
-                            <small style={{ fontSize: "0.7em", fontWeight: "bold" }}> Ostatnie logowanie: {(new Date(user.createdAt).toLocaleString('pl'))}</small>
-                          </span>
-                          <button className="btn btn-sm btn-danger">Odbierz dostęp</button>
-                        </div></li>)}
-                      </ul>
-                    </span>
-                    {team.owners.filter((u) => !u.teamAccepted).length > 0 && <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                      Na dostęp oczekują:
-                      <ul className="mb-0">
-                        {team.owners.filter((u) => !u.teamAccepted).map((user) => <li><div className="d-flex align-items-between">
-                          <span className="flex-grow-1">{user.email}</span>
-                          <button className="btn btn-sm btn-dark">Przyznaj dostęp</button>
-                        </div></li>)}
-                      </ul>
-                    </span>}
-                  </div>)}
-                </div>*/}
                 <div className="list-group">
                   <h3 className="text-center mt-1">Koordynatorzy</h3>
                   {district.admins.map((admin) => <div key={admin.id} className="list-group-item d-flex align-items-center">
                     <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                      {admin.email}
+                      {admin.email} <br/>
                       <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Ostatnie logowanie: {(new Date(admin.lastLogin)).toLocaleDateString('pl')}</small>
-                      <button className="btn btn-sm btn-danger">Usuń dostęp</button>
                     </span>
+                    <button className="btn btn-sm btn-danger" onClick={(e) => makeDistrictAdmin(district.id, admin.id, false)}>Usuń dostęp</button>
                   </div>)}
                   <div key="nowy" className="list-group-item text-center" style={{borderBottomLeftRadius: '0', borderBottomRightRadius: '0', borderBottom: '0'}}>
-                    <button className="btn btn-dark">Dodaj nowego</button>
+                    {newAccessGrants.get(district.id)?.show && <span>
+                      Nadaj dostęp. Wyszukaj osobę po adresie e-mail:
+                      <input className="form-control" placeholder="szukaj emaili..." value={newAccessGrants.get(district.id)?.filtertext} onChange={(e) => {let m = new Map(newAccessGrants); m.set(district.id, {...(m.get(district.id) === undefined ? {show: false, filtertext: ""} : m.get(district.id)) as any, filtertext: e.target.value}); setNewAccessGrant(m);}}></input>
+                      <ul>
+                        {users.filter((u) => {
+                          const filtertext = newAccessGrants.get(district.id);
+                          if(filtertext === undefined || filtertext.filtertext === "") return true;
+                          return u.email.includes(filtertext.filtertext);
+                        }).map((user, index, array) => {
+                          if(array.length > 10){
+                            if(index > 0) return;
+                            return <li><i>wpisz więcej znaków do wyszukiwarki</i></li>
+                          }
+                          return <li>
+                            {user.email} <button className="btn btn-sm btn-dark" onClick={(e) => {makeDistrictAdmin(district.id, user.id, true); setNewAccessGrant(new Map());}}>Nadaj uprawnienia</button>
+                          </li>
+                        })}
+                      </ul>
+                    </span>}
+                    {!newAccessGrants.get(district.id)?.show && <button className="btn btn-dark" onClick={(e) => {let m = new Map(newAccessGrants); m.set(district.id, {...(m.get(district.id) === undefined ? {show: false, filtertext: ""} : m.get(district.id)) as any, show: true}); setNewAccessGrant(m);}}>Dodaj osobę</button>}
                   </div>
                 </div>
               </div>

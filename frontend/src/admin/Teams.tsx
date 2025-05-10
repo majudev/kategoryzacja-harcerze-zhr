@@ -11,11 +11,10 @@ interface ShallowDistrict {
   name: string;
 };
 
-const Teams = ({userinfo} : {userinfo: UserInfo | null; }) => {
+const Teams = ({userinfo, users} : {userinfo: UserInfo | null; users: Array<{id: number; email: string}>}) => {
   useEffect(() => {
     if(userinfo !== null){
       updateDistricts();
-      updateUsers();
     }
   }, [userinfo]);
 
@@ -24,17 +23,9 @@ const Teams = ({userinfo} : {userinfo: UserInfo | null; }) => {
   const [district, setDistrict] = useState<District|null>(null);
   const [newTeam, setNewTeam] = useState({name: "", shadow: false});
 
-  const [users, setUsers] = useState<Array<{id: number; email: string}>>([]);
   const [newAccessGrants, setNewAccessGrant] = useState(new Map<number,{filtertext: string; show: boolean;}>());
 
-  const updateUsers = async () => {
-    try {
-      const res = await axios.get(`${API_ROOT}/admin/users/shallow`);
-      setUsers(res.data);
-    } catch (err: any) {
-      setUsers([]);
-    }
-  };
+  
 
   useEffect(() => {
     if(selectedDistrict > 0){
