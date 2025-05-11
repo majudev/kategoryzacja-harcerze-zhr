@@ -19,9 +19,14 @@ export const getInitialTasks = async (teamId: number, categorizationYearId: numb
 
         displayPriority: true,
       },
-      orderBy: {
-        name: 'desc',
-      }
+      orderBy: [
+        {
+          displayPriority: 'asc',
+        },
+        {
+          name: 'asc',
+        }
+      ]
     });
 
     const finishedTasks = await tx.initialTaskJoint.findMany({

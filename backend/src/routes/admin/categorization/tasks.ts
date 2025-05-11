@@ -66,6 +66,7 @@ router.post('/', async (req: Request, res: Response) => {
   if(type === "REFONLY"){
     secondaryGroupId = null;
     obligatory = true;
+    maxPoints = 0;
   }
 
   if(secondaryGroupId !== undefined && secondaryGroupId !== null){

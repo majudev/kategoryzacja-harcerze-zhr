@@ -64,10 +64,10 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
       },
       orderBy: [
         {
-          displayPriority: 'desc',
+          displayPriority: 'asc',
         },
         {
-          name: 'desc',
+          name: 'asc',
         }
       ]
     });
@@ -131,36 +131,6 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
         };
       });
 
-      /*const populatedTasksWithRefvals = populatedTasks.map(task => {
-        if((task.type !== "LINEAR_REF" && task.type !== "PARABOLIC_REF") || task.refValId === null) return task;
-
-        console.log(task);
-        console.log('RefValId: ' + task.refValId);
-
-        const refVal = populatedTasks.filter(t => t.id === task.refValId)[0].points;
-        const rawScore = calculateTaskScore(task.type, task.value, task.maxPoints, task.multiplier, refVal);
-        let primaryMaxPoints = undefined;
-        let primaryPoints = undefined;
-        let secondaryMaxPoints = undefined;
-        let secondaryPoints = undefined;
-        if(task.secondaryGroupId !== null){
-          primaryPoints = rawScore * task.split;
-          secondaryPoints = rawScore * (1-task.split);
-          primaryMaxPoints = task.maxPoints * task.split;
-          secondaryMaxPoints = task.maxPoints * (1-task.split);
-        }
-
-        return {
-          ...task,
-          points: rawScore,
-
-          primaryPoints,
-          secondaryPoints,
-          primaryMaxPoints,
-          secondaryMaxPoints,
-        };
-      });*/
-
       const collectedSplitPoints = populatedTasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.points : t.secondaryGroupId === taskGroup.id ? t.secondaryPoints as number : t.primaryPoints as number), 0);
       const maxSplitPoints = populatedTasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === taskGroup.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
       const maxFilteredSplitPoints = populatedTasks.filter(t => t.favourite).reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === taskGroup.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
@@ -171,7 +141,7 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
         primaryTasks: undefined,
         secondaryTasks: undefined,
         tasks: populatedTasks,
-        displayPriority: undefined,
+        //displayPriority: undefined,
 
         collectedSplitPoints,
         maxSplitPoints,
