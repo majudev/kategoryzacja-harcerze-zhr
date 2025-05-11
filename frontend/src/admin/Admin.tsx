@@ -28,6 +28,16 @@ export interface CategorizationMenu {
 const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
     const navigate = useNavigate();
 
+    const [rldcathook, reloadCategorizationsHook] = useState(false);
+
+    // Hook handler
+      useEffect(() => {
+        if(rldcathook){
+          updateCategorizations();
+          reloadCategorizationsHook(false);
+        }
+      }, [rldcathook]);
+
     // After hook has executed - check routes HERE
     useEffect(() => {
         if(userinfo !== null){
@@ -269,7 +279,7 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
               </>
               :
               <>
-                <CategorizationLayout userinfo={userinfo} categorizationId={activeCategorization} />
+                <CategorizationLayout userinfo={userinfo} categorizationId={activeCategorization} reloadCategorizationsHook={reloadCategorizationsHook} />
                 {/* Top Stats Cards */}
                 {/*!(initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length) && 
                   <StatsBar categorizationDetails={categorizationDetails} userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} />

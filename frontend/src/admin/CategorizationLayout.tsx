@@ -91,7 +91,7 @@ interface FilledCategorizationEntry {
   };
 }
 
-const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo | null; categorizationId: number;}) => {
+const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizationsHook} : {userinfo: UserInfo | null; categorizationId: number; reloadCategorizationsHook : React.Dispatch<React.SetStateAction<boolean>>}) => {
   useEffect(() => {
     if(userinfo !== null){
       updateCategorizationYear();
@@ -299,6 +299,37 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
     }
   };
 
+  const rebuildRanking = async () => {
+    try {
+      const res = await axios.patch(`${API_ROOT}/admin/categorization/state/ranking/rebuild/${categorizationId}`);
+      updateCategorizationYear();
+    } catch (err: any) {
+      alert("Wystąpił błąd");
+    }
+  };
+
+  const deleteRanking = async () => {
+    try {
+      const res = await axios.patch(`${API_ROOT}/admin/categorization/state/ranking/makedynamic/${categorizationId}`);
+      updateCategorizationYear();
+    } catch (err: any) {
+      alert("Wystąpił błąd");
+    }
+  };
+
+  const changeState = async (state: "OPEN" | "DRAFT" | "FINISHED") => {
+    try {
+      const action = state === "DRAFT" ? `draftify/${categorizationId}` :
+                     state === "OPEN" ? `activate/${categorizationId}` :
+                     "close";
+      const res = await axios.patch(`${API_ROOT}/admin/categorization/state/${action}`);
+      updateCategorizationYear();
+      reloadCategorizationsHook(true); // Changed state of categorizations - reload needed
+    } catch (err: any) {
+      alert("Wystąpił błąd");
+    }
+  };
+
     return (
       <>
         {/* Top stats bar */}
@@ -330,27 +361,41 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
                     SZKIC
                   </div>
                 }
+                {userinfo?.role !== "DISTRICT_COORDINATOR" && <>
+                  {categorizationYear.state === "OPEN" ? <>
+                    <button className="btn btn-sm btn-dark" onClick={(e) => changeState("FINISHED")}>Zamknij</button>
+                  </>:categorizationYear.state === "FINISHED" ? <>
+                    <button className="btn btn-sm btn-danger" onClick={(e) => changeState("OPEN")} disabled={!nuclearmode}>Otwórz ponownie</button>
+                    <button className="btn btn-sm btn-dark mt-1" onClick={(e) => changeState("DRAFT")}>Zamień na szkic</button>
+                  </>:<>
+                    <button className="btn btn-sm btn-dark" onClick={(e) => changeState("OPEN")}>Otwórz</button>
+                  </>}
+                </>}
               </div>
             </div>
           </div>
-          {userinfo?.role === "ADMIN" && <div className="col-12 col-sm-6 col-xl-3">
+          <div className="col-12 col-sm-6 col-xl-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <h5 className="text-muted mb-3">Dla odważnych</h5>
-                <div className="form-check form-switch">
+                {userinfo?.role !== "DISTRICT_COORDINATOR" && <div className="form-check form-switch">
                   <input className="form-check-input" type="checkbox" checked={nuclearmode} onChange={(e) => {if(!e.target.checked) setNuclearmode(e.target.checked); else document.getElementById('openNuclearModeModal')?.click();}}/>
                   <label className="form-check-label text-danger">Tryb atomowy</label>
-                </div>
+                </div>}
                 <button className="btn btn-sm btn-dark" onClick={(e) => {setShowInitialTasks(true); taskGroups.forEach((v, i, a) => {showTaskGroupMap.set(v.id, true); v.primaryTasks.forEach((t) => showTaskMap.set(t.id, true))})}}>Rozwiń wszystko</button>
               </div>
             </div>
-          </div>}
+          </div>
           <div className="col-12 col-sm-6 col-xl-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <h5 className="text-muted mb-3">Ranking</h5>
-                {categorizationYear.ranking ? 'Przeliczony' : `Dynamiczny ${categorizationYear.state === "FINISHED" ? "(!!!)" : ''}`}<br/>
-                {categorizationYear.state === "FINISHED" && <button className="btn btn-sm btn-danger" disabled={categorizationYear.ranking && !nuclearmode}>{categorizationYear.ranking ? 'Przelicz ponownie' : 'Przelicz'}</button>}
+                {categorizationYear.ranking ? 'Przeliczony' : `Dynamiczny ${categorizationYear.state === "FINISHED" ? "(!!!)" : ''}`}
+                {userinfo?.role !== "DISTRICT_COORDINATOR" && <>
+                  <br/>
+                  <button className={`btn btn-sm btn-danger`} onClick={(e) => document.getElementById('openRebuildRankingModal')?.click()} disabled={categorizationYear.ranking && !nuclearmode}>{categorizationYear.ranking ? 'Przelicz ponownie' : 'Przelicz'}</button>
+                  {categorizationYear.ranking && <button className="btn btn-sm btn-danger mt-1" onClick={(e) => document.getElementById('openDeleteRankingModal')?.click()} disabled={!nuclearmode}>Usuń ranking (włącz dynamiczny)</button>}
+                </>}
               </div>
             </div>
           </div>
@@ -822,6 +867,59 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
           </div>
         </div>
         <button type="button" id="openNuclearModeModal" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#nuclearModeModal"/>
+
+        <div className="modal fade" id="rebuildRankingModal" tabIndex={-1} aria-hidden="true">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">CZY NA PEWNO?</h5>
+                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div className="modal-body">
+                <p><i>Wolniej, wolniej, wstrzymaj konia...</i></p>
+                <p><b>Przeliczenie rankingu</b> to operacja której <b>nie da się</b> cofnąć.</p>
+                <p>Przeliczenie rankingu spowoduje, że ranking przeliczony przy zamknięciu kategoryzacji zostanie skasowany i nadpisany stanem z teraz. Należy je zastosować na przykład wtedy, gdy: <ul>
+                  <li>Zamknąłeś kategoryzację w czerwcu i jakaś sierota przypomniała sobie w sierpniu że chce uzupełnić arkusz, i chcesz żeby była widoczna w rankingu.</li>
+                  <li>Przy zamykaniu kategoryzacji zapomniałeś że jakaś drużyna jest <i>ukryta</i> i chcesz żeby jednak się pokazywała w rankingu, więc teraz zmieniłeś żeby była <i>widoczna</i> i potem znowu ją <i>ukryjesz</i></li>
+                  <li>Jest jakiś inny powód dla którego chcesz <b>skasować</b> stary stan rankingu.</li>
+                </ul></p>
+                <p>Niestety to działanie ma wady. Jeżeli od czasu zamknięcia jakaś jednostka została <i>ukryta</i>, to nie będzie widoczna w nowym rankingu. Tak samo jeżeli jednostka zmieniła od tamtego czasu nazwę, to po przeliczeniu będzie widoczna jej nowa nazwa.</p>
+                <p><b>Jeśli nie jesteś absolutnie pewny swoich działań, zawróć póki nic nie zepsułeś.</b></p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-danger" data-bs-dismiss="modal" onClick={(e) => rebuildRanking()}>DOBRA WIEM CO ROBIĘ</button>
+                <button type="button" className="btn btn-dark" data-bs-dismiss="modal">Wychodzę</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="openRebuildRankingModal" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#rebuildRankingModal"/>
+
+        <div className="modal fade" id="deleteRankingModal" tabIndex={-1} aria-hidden="true">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">CZY NA PEWNO?</h5>
+                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div className="modal-body">
+                <p><i>Wolniej, wolniej, wstrzymaj konia...</i></p>
+                <p><b>Usunięcie rankingu</b> to operacja której <b>nie da się</b> cofnąć.</p>
+                <p>Usunięcie rankingu spowoduje, że ranking będzie obliczany dynamicznie, zgodnie z aktualnym stanem. Czasem to dobry pomysł, na przykład gdy:<ul>
+                  <li>Otwierasz kategoryzację która wcześniej była zamknięta i chcesz żeby ranking był znowu liczony na bieżąco.</li>
+                  <li>Jest jakiś inny powód dla którego chcesz <b>skasować</b> stary stan rankingu.</li>
+                </ul></p>
+                <p>Niestety to działanie ma wady. Jeżeli usuniesz ranking dla zamkniętej kategoryzacji, to wydajność systemu <b>znacząco spadnie</b>. Rekordy mogą się też nie wyświetlać poprawnie.</p>
+                <p><b>Jeśli nie jesteś absolutnie pewny swoich działań, zawróć póki nic nie zepsułeś.</b></p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-danger" data-bs-dismiss="modal" onClick={(e) => deleteRanking()}>DOBRA WIEM CO ROBIĘ</button>
+                <button type="button" className="btn btn-dark" data-bs-dismiss="modal">Wychodzę</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="openDeleteRankingModal" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#deleteRankingModal"/>
       </>
     );
   };

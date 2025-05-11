@@ -3,6 +3,7 @@ import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import initialRouter from "./initial";
 import tasksRouter from "./tasks";
+import stateRouter from "./stateman";
 import { getTasks } from "../../tasks";
 import { getCategory } from "../../categorization";
 
@@ -11,6 +12,7 @@ const prisma = new PrismaClient();
 
 router.use('/initial', initialRouter);
 router.use('/tasks', tasksRouter);
+router.use('/state', stateRouter);
 
 router.get('/shallow', async (req: Request, res: Response) => {
   const catYears = await prisma.categorizationYear.findMany({

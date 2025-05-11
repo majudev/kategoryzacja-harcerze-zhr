@@ -4,9 +4,9 @@ import redis from "../../utils/redis";
 
 const prisma = new PrismaClient();
 
-export const getCategorizationYearId = async () => {
+export const getCategorizationYearId = async (skipCache?: boolean) => {
     let idString = await redis.get('currentCategorizationYearId');
-    if(idString === null){
+    if(idString === null || skipCache === true){
         const year = await prisma.categorizationYear.findMany({
             where: {
                 state: "OPEN",

@@ -17,7 +17,7 @@ router.get('/years', async (req: Request, res: Response) => {
         {
           state: "OPEN",
         }
-      ]
+      ],
     },
     select: {
         id: true,

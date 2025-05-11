@@ -6,21 +6,23 @@ import redis from "./redis";
 
 const prisma = new PrismaClient();
 
-export const rebuildRanking = async (categorizationYearId: number) => {
+export const rebuildRanking = async (categorizationYearId: number, skipDatabase?: boolean) => {
     // If DB entry exists - do not rebuild
-    const catYear = await prisma.categorizationYear.findUnique({
-        where: {
-            id: categorizationYearId,
-        },
-        select: {
-            ranking: {
-                select: {
-                    JSON: true,
+    if(!skipDatabase){
+        const catYear = await prisma.categorizationYear.findUnique({
+            where: {
+                id: categorizationYearId,
+            },
+            select: {
+                ranking: {
+                    select: {
+                        JSON: true,
+                    }
                 }
             }
-        }
-    });
-    if(catYear !== null && catYear.ranking !== null) return catYear.ranking.JSON;
+        });
+        if(catYear !== null && catYear.ranking !== null) return catYear.ranking.JSON;
+    }
     console.log('Rebuilding...');
 
     const teams = await prisma.team.findMany({

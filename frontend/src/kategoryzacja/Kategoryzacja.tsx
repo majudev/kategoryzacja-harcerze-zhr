@@ -104,14 +104,25 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
     const [initialTasklist, setInitialTasklist] = useState<Array<Task>>([]);
     const [tasklist, setTasklist] = useState<Array<Category>>([]);
 
+    const [noActiveCategorization, setNoActiveCategorization] = useState(false);
+
     const locked = userinfo !== null && userinfo.team !== null && userinfo.team.locked;
 
     const updateCategorizationDetails = async () => {
       try {
         const res = await axios.get(`${API_ROOT}/categorization`);
         setCategorizationDetails(res.data);
+        setNoActiveCategorization(false);
       } catch (err: any) {
         setCategorizationDetails(undefined);
+
+        if (axios.isAxiosError(err)) {
+          const status = err.response?.status;
+      
+          if (status === 409) {
+            setNoActiveCategorization(true);
+          }
+        }
       }
     };
 
@@ -244,6 +255,19 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
 
     return (
       <NavbarOverlay userinfo={userinfo}>
+        {noActiveCategorization ? 
+        <div className="dashboard-layout" style={{ height: 'calc(100vh - 56px)' }}>
+          <div className="row g-4 mt-4">
+            <div className="col-12">
+              <div className="card shadow-sm border-0 h-100">
+                <div className="card-body">
+                  <h5 className="text-center m-3">Aktualnie nie ma trwającej kategoryzacji. Zapraszamy później!</h5>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        :
         <div className="dashboard-layout" style={{ height: 'calc(100vh - 56px)' }}>
           <div className="d-flex flex-column flex-lg-row h-100">
             {/* Desktop Sidebar */}
@@ -258,6 +282,17 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
               {!(initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length) && 
                 <StatsBar categorizationDetails={categorizationDetails} categories={tasklist} myTasksMode={showStarredOnly} locked={locked} />
               }
+
+              {/* Locked categorization info */}
+              {locked && <div className="row g-4 mb-4">
+                <div className="col-12">
+                  <div className="card shadow-sm border-0 h-100">
+                    <div className="card-body">
+                      <h5 className="text-center mb-3">Twój arkusz został zatwierdzony przez administratora i nie możesz go już edytować.</h5>
+                    </div>
+                  </div>
+                </div>
+              </div>}
 
               {/* Task List */}
               <div className="task-list">
@@ -283,7 +318,7 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
               overflow: hidden;
             }
           `}</style>
-        </div>
+        </div>}
       </NavbarOverlay>
     );
   };

@@ -131,14 +131,6 @@ const StatsBar = ({categorizationDetails, categories, myTasksMode, locked} : {ca
             </div>
           </div>
         </div>*/}
-        
-        {locked && <div className="col-12">
-          <div className="card shadow-sm border-0 h-100">
-            <div className="card-body">
-              <h5 className="text-center mb-3">Twój arkusz został zatwierdzony przez administratora i nie możesz go już edytować.</h5>
-            </div>
-          </div>
-        </div>}
       </div>
     );
   };
