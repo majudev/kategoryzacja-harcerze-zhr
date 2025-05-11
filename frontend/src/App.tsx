@@ -26,6 +26,7 @@ export interface UserInfo {
   team: {
     id: number;
     name: string;
+    locked: boolean;
   }|null;
   teamAccepted: boolean;
 };
@@ -74,8 +75,8 @@ function App(): ReactElement {
 
           <Route path="/ranking" element={<Ranking userinfo={userinfo}/>} />
 
-          <Route path="/admin" element={<Admin userinfo={userinfo}/>}>
-          </Route>
+          <Route path="/admin" element={<Admin userinfo={userinfo}/>} />
+          <Route path="/kategoryzacja/:teamId" element={<Admin userinfo={userinfo}/>} />
         </Routes>
       </div>
     </Router>

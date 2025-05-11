@@ -3,6 +3,8 @@ import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import initialRouter from "./initial";
 import tasksRouter from "./tasks";
+import { getTasks } from "../../tasks";
+import { getCategory } from "../../categorization";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -175,6 +177,72 @@ router.patch('/:categorizationYearId(\\d+)', async (req: Request, res: Response)
   });
 
   res.status(204).end();
+});
+
+router.get('/list/:categorizationYearId(\\d+)', async (req: Request, res: Response) => {
+  const categorizationYearId = Number.parseInt(req.params.categorizationYearId);
+
+  const teams = await prisma.team.findMany({
+    where: {
+      shadow: false,
+    },
+    select: {
+      id: true,
+      name: true,
+      district: {
+        select: {
+          id: true,
+          name: true,
+        }
+      }
+    },
+    orderBy: [
+      {
+        district: {
+          name: "asc",
+        }
+      },
+      {
+        name: "asc",
+      }
+    ]
+  });
+
+  const categorizationYear = await prisma.categorizationYear.findUnique({
+    where: {
+      id: categorizationYearId,
+    },
+    select: {
+      id: true,
+      name: true,
+
+      lesnaLesneThreshold: true,
+      lesnaPuszczanskieThreshold: true,
+      puszczanskaLesnaThreshold: true,
+      puszczanskaPuszczanskieThreshold: true,
+    }
+  });
+  if(categorizationYear === null){ // should never happen
+    res.status(500).end();
+    return;
+  }
+
+  const list = await Promise.all(teams.map(async (team) => {  
+    const tasks = await getTasks(team.id, categorizationYearId);
+  
+    const polowa = tasks.filter((taskGroup) => taskGroup.achievedSymbol === 'POLOWA').length;
+    const lesna = tasks.filter((taskGroup) => taskGroup.achievedSymbol === 'LESNA').length;
+    const puszczanska = tasks.filter((taskGroup) => taskGroup.achievedSymbol === 'PUSZCZANSKA').length;
+  
+    const result = await getCategory(polowa, lesna, puszczanska, categorizationYear.lesnaLesneThreshold, categorizationYear.lesnaPuszczanskieThreshold, categorizationYear.puszczanskaLesnaThreshold, categorizationYear.puszczanskaPuszczanskieThreshold);
+
+    return {
+      ...team,
+      ...result,
+    }
+  }));
+
+  res.status(200).json(list);
 });
 
 export default router;

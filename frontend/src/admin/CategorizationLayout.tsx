@@ -71,10 +71,31 @@ interface CategorizationYear {
   ranking: boolean;
 };
 
+interface FilledCategorizationEntry {
+  category: 'POLOWA' | 'LESNA' | 'PUSZCZANSKA';
+  nextCategory: 'POLOWA' | 'LESNA' | 'PUSZCZANSKA';
+  tokens: {
+    polowa: number;
+    lesna: number;
+    puszczanska: number;
+  };
+  missingTokens: {
+    lesna: number;
+    puszczanska: number;
+  };
+  id: number;
+  name: string;
+  district: {
+    id: number;
+    name: string;
+  };
+}
+
 const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo | null; categorizationId: number;}) => {
   useEffect(() => {
     if(userinfo !== null){
       updateCategorizationYear();
+      updateFilledCategorizations();
     }
 
     // Reset the state
@@ -94,6 +115,8 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
   const [categorizationYear, setCategorizationYear] = useState<CategorizationYear>({name: "", state: "DRAFT", createdAt: "", id: -1, lesnaLesneThreshold: 0, lesnaPuszczanskieThreshold: 0, puszczanskaLesnaThreshold: 0, puszczanskaPuszczanskieThreshold: 0, ranking: false});
   const [initialTasks, setInitialTasks] = useState<Array<InitialTask>>([]);
   const [taskGroups, setTaskGroups] = useState<Array<CategorizationTaskGroup>>([]);
+
+  const [filledCategorizations, setFilledCategorizations] = useState<Array<FilledCategorizationEntry>>([]);
 
   const [showFilledCategorizations, setShowFilledCategorizations] = useState(false);
   const [showInitialTasks, setShowInitialTasks] = useState(false);
@@ -116,7 +139,7 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
   const updateCategorizationYear = async () => {
     try {
       const res = await axios.get(`${API_ROOT}/admin/categorization/${categorizationId}`);
-      setCategorizationYear({...res.data, initialTasks: undefined});
+      setCategorizationYear({...res.data, initialTasks: undefined, taskGroup: undefined});
       setInitialTasks(res.data.initialTasks);
       setTaskGroups(res.data.taskGroup);
 
@@ -132,6 +155,15 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
       setCategorizationYear({name: "", state: "DRAFT", createdAt: "", id: -1, lesnaLesneThreshold: 0, lesnaPuszczanskieThreshold: 0, puszczanskaLesnaThreshold: 0, puszczanskaPuszczanskieThreshold: 0, ranking: false});
       setInitialTasks([]);
       setTaskGroups([]);
+    }
+  };
+
+  const updateFilledCategorizations = async () => {
+    try {
+      const res = await axios.get(`${API_ROOT}/admin/categorization/list/${categorizationId}`);
+      setFilledCategorizations(res.data);
+    } catch (err: any) {
+      setFilledCategorizations([]);
     }
   };
 
@@ -333,28 +365,26 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
               </div>
               {showFilledCategorizations && <div className="card-body p-0">
                 <div className="list-group">
-                  <div className="list-group-item">
-                    <span className="me-3">Drużyna 1</span>
-                    
-                    <span className="badge bg-primary rounded-pill me-1">0</span>
-                    <span className="badge bg-success rounded-pill me-1">1</span>
-                    <span className="badge bg-danger rounded-pill me-1">2</span>
+                  {filledCategorizations.flatMap((entry) => entry.district.name).filter((value, index, array) => array.indexOf(value) === index).map((districtName) => {
+                    return <>
+                      <div className="list-group-item text-center" style={{backgroundColor: 'var(--bs-card-cap-bg)'}}>
+                        <h5 className="mb-0">{districtName}</h5>
+                      </div>
+                      {filledCategorizations.filter((entry) => entry.district.name === districtName).map((entry) => {
+                        return <div className="list-group-item">
+                          <span className="me-3">{entry.name}</span>
+                          
+                          <span className="badge bg-primary rounded-pill me-1">{entry.tokens.polowa}</span>
+                          <span className="badge bg-success rounded-pill me-1">{entry.tokens.lesna}</span>
+                          <span className="badge bg-danger rounded-pill me-1">{entry.tokens.puszczanska}</span>
 
-                    <img className={`ms-3 me-3 img-src-puszczanska`} style={{ width: '20px', height: '20px' }} />
+                          <img className={`ms-3 me-3 img-src-${entry.category.toLowerCase()}`} style={{ width: '20px', height: '20px' }} />
 
-                    <button className="btn btn-sm btn-dark ms-1">Zobacz arkusz</button>
-                  </div>
-                  <div className="list-group-item">
-                    <span className="me-3">Drużyna 2</span>
-                    
-                    <span className="badge bg-primary rounded-pill me-1">0</span>
-                    <span className="badge bg-success rounded-pill me-1">1</span>
-                    <span className="badge bg-danger rounded-pill me-1">2</span>
-
-                    <img className={`ms-3 me-3 img-src-polowa`} style={{ width: '20px', height: '20px' }} />
-
-                    <button className="btn btn-sm btn-dark ms-1">Zobacz arkusz</button>
-                  </div>
+                          <Link className="btn btn-sm btn-dark ms-1" to={"/admin/kategoryzacja/" + entry.id}>Zobacz arkusz</Link>
+                        </div>
+                      })}
+                    </>
+                  })}
                 </div>
               </div>}
             </div>
