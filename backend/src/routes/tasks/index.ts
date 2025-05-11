@@ -131,8 +131,11 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
         };
       });
 
-      const populatedTasksWithRefvals = populatedTasks.map(task => {
+      /*const populatedTasksWithRefvals = populatedTasks.map(task => {
         if((task.type !== "LINEAR_REF" && task.type !== "PARABOLIC_REF") || task.refValId === null) return task;
+
+        console.log(task);
+        console.log('RefValId: ' + task.refValId);
 
         const refVal = populatedTasks.filter(t => t.id === task.refValId)[0].points;
         const rawScore = calculateTaskScore(task.type, task.value, task.maxPoints, task.multiplier, refVal);
@@ -156,18 +159,18 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
           primaryMaxPoints,
           secondaryMaxPoints,
         };
-      });
+      });*/
 
-      const collectedSplitPoints = populatedTasksWithRefvals.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.points : t.secondaryGroupId === taskGroup.id ? t.secondaryPoints as number : t.primaryPoints as number), 0);
-      const maxSplitPoints = populatedTasksWithRefvals.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === taskGroup.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
-      const maxFilteredSplitPoints = populatedTasksWithRefvals.filter(t => t.favourite).reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === taskGroup.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
+      const collectedSplitPoints = populatedTasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.points : t.secondaryGroupId === taskGroup.id ? t.secondaryPoints as number : t.primaryPoints as number), 0);
+      const maxSplitPoints = populatedTasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === taskGroup.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
+      const maxFilteredSplitPoints = populatedTasks.filter(t => t.favourite).reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === taskGroup.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
       const achievedSymbol = collectedSplitPoints >= taskGroup.puszczanskaThreshold ? "PUSZCZANSKA" : collectedSplitPoints >= taskGroup.lesnaThreshold ? "LESNA" : "POLOWA";
 
       return {
         ...taskGroup,
         primaryTasks: undefined,
         secondaryTasks: undefined,
-        tasks: populatedTasksWithRefvals,
+        tasks: populatedTasks,
         displayPriority: undefined,
 
         collectedSplitPoints,
@@ -178,7 +181,48 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
       };
     });
 
-    return mergedTaskGroups.sort((a, b) => (a.displayPriority !== b.displayPriority) ? (a.displayPriority - b.displayPriority) : a.name.localeCompare(b.name));
+    /// This part does the "second pass" and substitutes REF task calculations with proper ones
+    /// Doing it in two stages is required, as we cannot trust that refVal has proper value on the first pass,
+    /// because the calculations are done out-of-order.
+    const mergedTaskGroupsWithRefVals = mergedTaskGroups.map((taskGroup) => {
+      const tasksWithRefVals = taskGroup.tasks.map((task) => {
+        if((task.type !== "LINEAR_REF" && task.type !== "PARABOLIC_REF") || task.refValId === null) return task;
+
+        console.log(task);
+        console.log('RefValId: ' + task.refValId);
+
+        const refVal = mergedTaskGroups.flatMap((tg) => tg.tasks).filter(t => t.id === task.refValId)[0].points;
+        const rawScore = calculateTaskScore(task.type, task.value, task.maxPoints, task.multiplier, refVal);
+        let primaryMaxPoints = undefined;
+        let primaryPoints = undefined;
+        let secondaryMaxPoints = undefined;
+        let secondaryPoints = undefined;
+        if(task.secondaryGroupId !== null){
+          primaryPoints = rawScore * task.split;
+          secondaryPoints = rawScore * (1-task.split);
+          primaryMaxPoints = task.maxPoints * task.split;
+          secondaryMaxPoints = task.maxPoints * (1-task.split);
+        }
+
+        return {
+          ...task,
+          points: rawScore,
+
+          primaryPoints,
+          secondaryPoints,
+          primaryMaxPoints,
+          secondaryMaxPoints,
+        };
+      });
+
+      return {
+        ...taskGroup,
+
+        tasks: tasksWithRefVals,
+      }
+    });
+
+    return mergedTaskGroupsWithRefVals.sort((a, b) => (a.displayPriority !== b.displayPriority) ? (a.displayPriority - b.displayPriority) : a.name.localeCompare(b.name));
   });
 
   return tasks;
