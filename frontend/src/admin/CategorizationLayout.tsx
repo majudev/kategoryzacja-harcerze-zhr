@@ -21,6 +21,42 @@ interface InitialTask {
   displayPriority: number;
 };
 
+interface CategorizationTask {
+  id: number;
+  name: string;
+  description: string | null;
+
+  primaryGroup: {
+    id: number;
+    name: string;
+  };
+  secondaryGroup: {
+    id: number;
+    name: string
+  }|null;
+  split: number;
+
+  type: CategorizationTaskType;
+  maxPoints: number;
+  multiplier: number|null;
+
+  refValId: number|null;
+
+  obligatory: boolean;
+}
+
+interface CategorizationTaskGroup {
+  id: number;
+  name: string;
+
+  primaryTasks: Array<CategorizationTask>;
+
+  lesnaThreshold: number;
+  puszczanskaThreshold: number;
+
+  displayPriority: number;
+}
+
 interface CategorizationYear {
   id: number;
   name: string;
@@ -32,39 +68,7 @@ interface CategorizationYear {
   puszczanskaLesnaThreshold: number;
   puszczanskaPuszczanskieThreshold: number;
 
-  taskGroup: Array<{
-    id: number;
-    name: string;
-
-    primaryTasks: Array<{
-      id: number;
-      name: string;
-      description: string | null;
-  
-      primaryGroup: {
-        id: number;
-        name: string;
-      };
-      secondaryGroup: {
-        id: number;
-        name: string
-      }|null;
-      split: number;
-
-      type: CategorizationTaskType;
-      maxPoints: number;
-      multiplier: number|null;
-
-      obligatory: boolean;
-    }>;
-
-    lesnaThreshold: number;
-    puszczanskaThreshold: number;
-
-    displayPriority: number;
-  }>;
-
-  rankingExists: boolean;
+  ranking: boolean;
 };
 
 const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo | null; categorizationId: number;}) => {
@@ -72,32 +76,52 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
     if(userinfo !== null){
       updateCategorizationYear();
     }
+
+    // Reset the state
+    setNuclearmode(false);
+    setShowFilledCategorizations(false);
+    setShowInitialTasks(false);
+    setShowTaskGroupMap(new Map<number,boolean>());
+    setShowTaskMap(new Map<number,boolean>());
   }, [categorizationId]);
 
-  const [inputlock, setInputlock] = useState(false);
   const [nuclearmode, setNuclearmode] = useState(false);
 
-  const [categorizationYear, setCategorizationYear] = useState<CategorizationYear>({name: "", state: "DRAFT", createdAt: "", id: -1, lesnaLesneThreshold: 0, lesnaPuszczanskieThreshold: 0, puszczanskaLesnaThreshold: 0, puszczanskaPuszczanskieThreshold: 0, rankingExists: false, taskGroup: []});
+  const [categorizationYear, setCategorizationYear] = useState<CategorizationYear>({name: "", state: "DRAFT", createdAt: "", id: -1, lesnaLesneThreshold: 0, lesnaPuszczanskieThreshold: 0, puszczanskaLesnaThreshold: 0, puszczanskaPuszczanskieThreshold: 0, ranking: false});
   const [initialTasks, setInitialTasks] = useState<Array<InitialTask>>([]);
+  const [taskGroups, setTaskGroups] = useState<Array<CategorizationTaskGroup>>([]);
+
   const [showFilledCategorizations, setShowFilledCategorizations] = useState(false);
+  const [showInitialTasks, setShowInitialTasks] = useState(false);
+  const [showTaskGroupMap, setShowTaskGroupMap] = useState(new Map<number,boolean>());
+  const [showTaskMap, setShowTaskMap] = useState(new Map<number,boolean>());
 
   const [newGroup, setNewGroup] = useState<{name: string; displayPriority: number;}>({name: "", displayPriority: 100});
   const [newInitial, setNewInitial] = useState<{text: string; description: string;}|null>(null);
+  const [newTask, setNewTask] = useState<CategorizationTask>({id: -1, description: "", maxPoints: 0, multiplier: null, name: "", obligatory: false, primaryGroup: {id: -1, name: ""}, secondaryGroup: null, refValId: null, split: 1, type: "BOOLEAN"});
 
   const [lesnaThresholdModified, setLesnaThresholdsModified] = useState(false);
   const [puszczanskaThresholdModified, setPuszczanskaThresholdsModified] = useState(false);
   const [initialTaskModifiedMap, setInitialTaskModifiedMap] = useState(new Map<number,boolean>());
+  const [taskGroupModifiedMap, setTaskGroupModifiedMap] = useState(new Map<number,boolean>());
+  const [taskModifiedMap, setTaskModifiedMap] = useState(new Map<number,boolean>());
 
   const updateCategorizationYear = async () => {
     try {
       const res = await axios.get(`${API_ROOT}/admin/categorization/${categorizationId}`);
       setCategorizationYear({...res.data, initialTasks: undefined});
       setInitialTasks(res.data.initialTasks);
+      setTaskGroups(res.data.taskGroup);
+
       setLesnaThresholdsModified(false);
       setPuszczanskaThresholdsModified(false);
+      setInitialTaskModifiedMap(new Map<number,boolean>());
+      setTaskGroupModifiedMap(new Map<number,boolean>());
+      setTaskModifiedMap(new Map<number,boolean>());
     } catch (err: any) {
-      setCategorizationYear({name: "", state: "DRAFT", createdAt: "", id: -1, lesnaLesneThreshold: 0, lesnaPuszczanskieThreshold: 0, puszczanskaLesnaThreshold: 0, puszczanskaPuszczanskieThreshold: 0, rankingExists: false, taskGroup: []});
+      setCategorizationYear({name: "", state: "DRAFT", createdAt: "", id: -1, lesnaLesneThreshold: 0, lesnaPuszczanskieThreshold: 0, puszczanskaLesnaThreshold: 0, puszczanskaPuszczanskieThreshold: 0, ranking: false});
       setInitialTasks([]);
+      setTaskGroups([]);
     }
   };
 
@@ -160,6 +184,40 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
     }
   };
 
+  const createTaskGroup = async () => {
+    try {
+      const res = await axios.post(`${API_ROOT}/admin/categorization/tasks/group`, {
+        ...newGroup,
+
+        lesnaThreshold: 1,
+        puszczanskaThreshold: 1,
+        categorizationYearId: categorizationId,
+      });
+      setNewGroup({name: "", displayPriority: 100});
+      updateCategorizationYear();
+    } catch (err: any) {
+      alert("Wystąpił błąd");
+    }
+  };
+
+  const modifyTaskGroup = async (id: number) => {
+    try {
+      const res = await axios.patch(`${API_ROOT}/admin/categorization/tasks/group/${id}`, taskGroups.filter(tg => tg.id === id)[0]);
+      updateCategorizationYear();
+    } catch (err: any) {
+      alert("Wystąpił błąd");
+    }
+  };
+
+  const deleteTaskGroup = async (id: number) => {
+    try {
+      const res = await axios.delete(`${API_ROOT}/admin/categorization/tasks/group/${id}`);
+      updateCategorizationYear();
+    } catch (err: any) {
+      alert("Wystąpił błąd");
+    }
+  };
+
     return (
       <>
         {/* Top stats bar */}
@@ -202,6 +260,7 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
                   <input className="form-check-input" type="checkbox" checked={nuclearmode} onChange={(e) => {if(!e.target.checked) setNuclearmode(e.target.checked); else document.getElementById('openNuclearModeModal')?.click();}}/>
                   <label className="form-check-label text-danger">Tryb atomowy</label>
                 </div>
+                <button className="btn btn-sm btn-dark" onClick={(e) => {setShowInitialTasks(true); taskGroups.forEach((v, i, a) => {showTaskGroupMap.set(v.id, true); v.primaryTasks.forEach((t) => showTaskMap.set(t.id, true))})}}>Rozwiń wszystko</button>
               </div>
             </div>
           </div>}
@@ -209,7 +268,7 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <h5 className="text-muted mb-3">Ranking</h5>
-                {categorizationYear.rankingExists ? 'Przeliczony' : 'Dynamiczny'}<br/>
+                {categorizationYear.ranking ? 'Przeliczony' : 'Dynamiczny'}<br/>
                 <button className="btn btn-sm btn-danger" disabled={!nuclearmode}>Przelicz</button>
               </div>
             </div>
@@ -282,7 +341,7 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
                         <div className="input-group-prepend">
                           <span className="input-group-text">Minimum symboli <img className="img-src-lesna ms-2" style={{ width: '20px', height: '20px' }} /></span>
                         </div>
-                        <input className="form-control" type="number" min="0" max={categorizationYear.taskGroup.length} value={categorizationYear.lesnaLesneThreshold} onChange={(e) => {setCategorizationYear({...categorizationYear, lesnaLesneThreshold: Number.parseInt(e.target.value)}); setLesnaThresholdsModified(true);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                        <input className="form-control" type="number" min="0" max={taskGroups.length} value={categorizationYear.lesnaLesneThreshold} onChange={(e) => {setCategorizationYear({...categorizationYear, lesnaLesneThreshold: Number.parseInt(e.target.value)}); setLesnaThresholdsModified(true);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
                       </div>
                     </li>
                     <li className="list-group-item d-flex align-items-center">
@@ -290,7 +349,7 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
                         <div className="input-group-prepend">
                           <span className="input-group-text">Minimum symboli <img className="img-src-puszczanska ms-2" style={{ width: '20px', height: '20px' }} /></span>
                         </div>
-                        <input className="form-control" type="number" min="0" max={categorizationYear.taskGroup.length} value={categorizationYear.lesnaPuszczanskieThreshold} onChange={(e) => {setCategorizationYear({...categorizationYear, lesnaPuszczanskieThreshold: Number.parseInt(e.target.value)}); setLesnaThresholdsModified(true);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                        <input className="form-control" type="number" min="0" max={taskGroups.length} value={categorizationYear.lesnaPuszczanskieThreshold} onChange={(e) => {setCategorizationYear({...categorizationYear, lesnaPuszczanskieThreshold: Number.parseInt(e.target.value)}); setLesnaThresholdsModified(true);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
                       </div>
                     </li>
                     {lesnaThresholdModified && <li className="list-group-item d-flex align-items-center text-center">
@@ -312,7 +371,7 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
                         <div className="input-group-prepend">
                           <span className="input-group-text">Minimum symboli <img className="img-src-lesna ms-2" style={{ width: '20px', height: '20px' }} /></span>
                         </div>
-                        <input className="form-control" type="number" min="0" max={categorizationYear.taskGroup.length} value={categorizationYear.puszczanskaLesnaThreshold} onChange={(e) => {setCategorizationYear({...categorizationYear, puszczanskaLesnaThreshold: Number.parseInt(e.target.value)}); setPuszczanskaThresholdsModified(true);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                        <input className="form-control" type="number" min="0" max={taskGroups.length} value={categorizationYear.puszczanskaLesnaThreshold} onChange={(e) => {setCategorizationYear({...categorizationYear, puszczanskaLesnaThreshold: Number.parseInt(e.target.value)}); setPuszczanskaThresholdsModified(true);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
                       </div>
                     </li>
                     <li className="list-group-item d-flex align-items-center">
@@ -320,7 +379,7 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
                         <div className="input-group-prepend">
                           <span className="input-group-text">Minimum symboli <img className="img-src-puszczanska ms-2" style={{ width: '20px', height: '20px' }} /></span>
                         </div>
-                        <input className="form-control" type="number" min="0" max={categorizationYear.taskGroup.length} value={categorizationYear.puszczanskaPuszczanskieThreshold} onChange={(e) => {setCategorizationYear({...categorizationYear, puszczanskaPuszczanskieThreshold: Number.parseInt(e.target.value)}); setPuszczanskaThresholdsModified(true);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                        <input className="form-control" type="number" min="0" max={taskGroups.length} value={categorizationYear.puszczanskaPuszczanskieThreshold} onChange={(e) => {setCategorizationYear({...categorizationYear, puszczanskaPuszczanskieThreshold: Number.parseInt(e.target.value)}); setPuszczanskaThresholdsModified(true);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
                       </div>
                     </li>
                     {puszczanskaThresholdModified && <li className="list-group-item d-flex align-items-center text-center">
@@ -338,40 +397,40 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
           <div key="initial" className="col">
             <div className="card shadow-sm">
               <div className="card-header d-flex justify-content-between align-items-center">
-                <h5 className="mb-0 text-center">Wymagania podstawowe</h5>
+                <h5 className="mb-0 text-center" onClick={(e) => setShowInitialTasks(!showInitialTasks)}><i className={`bi bi-caret-${showInitialTasks ? 'down' : 'right'}-fill`}></i>Wymagania podstawowe</h5>
               </div>
-              <div className="card-body p-0">
+              {showInitialTasks && <div className="card-body p-0">
                 <div className="list-group">
                   {initialTasks.map((initialTask) => {
-                    return <div className="list-group-item">
+                    return <div key={initialTask.id} className="list-group-item">
                       <div className="d-flex mb-3">
                         <div className="w-100">
                           <div className="input-group mb-1">
                             <div className="input-group-prepend">
                               <span className="input-group-text">Treść wymagania</span>
                             </div>
-                            <input className="form-control" type="text" value={initialTask.name} onChange={(e) => {let m = new Map(initialTaskModifiedMap); m.set(initialTask.id, true); setInitialTaskModifiedMap(m); setInitialTasks(initialTasks.map(t => t.id === initialTask.id ? { ...t, name: e.target.value } : t));}}/>
+                            <input className="form-control" type="text" value={initialTask.name} onChange={(e) => {let m = new Map(initialTaskModifiedMap); m.set(initialTask.id, true); setInitialTaskModifiedMap(m); setInitialTasks(initialTasks.map(t => t.id === initialTask.id ? { ...t, name: e.target.value } : t));}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
                           </div>
                           <div className="input-group mb-1">
                             <div className="input-group-prepend">
                               <span className="input-group-text h-100">Opis wymagania</span>
                             </div>
-                            <textarea className="form-control" value={initialTask.description || ""} onChange={(e) => {let m = new Map(initialTaskModifiedMap); m.set(initialTask.id, true); setInitialTaskModifiedMap(m); setInitialTasks(initialTasks.map(t => t.id === initialTask.id ? { ...t, description: e.target.value } : t));}}/>
+                            <textarea className="form-control" value={initialTask.description || ""} onChange={(e) => {let m = new Map(initialTaskModifiedMap); m.set(initialTask.id, true); setInitialTaskModifiedMap(m); setInitialTasks(initialTasks.map(t => t.id === initialTask.id ? { ...t, description: e.target.value } : t));}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
                           </div>
                           <div className="input-group mb-1">
                             <div className="input-group-prepend">
                               <span className="input-group-text">Priorytet wyświetlania</span>
                             </div>
-                            <input className="form-control" type="number" min="0" max="1000" value={initialTask.displayPriority} onChange={(e) => {let m = new Map(initialTaskModifiedMap); m.set(initialTask.id, true); setInitialTaskModifiedMap(m); setInitialTasks(initialTasks.map(t => t.id === initialTask.id ? { ...t, displayPriority: Number.parseInt(e.target.value) } : t));}}/>
+                            <input className="form-control" type="number" min="0" max="1000" value={initialTask.displayPriority} onChange={(e) => {let m = new Map(initialTaskModifiedMap); m.set(initialTask.id, true); setInitialTaskModifiedMap(m); setInitialTasks(initialTasks.map(t => t.id === initialTask.id ? { ...t, displayPriority: Number.parseInt(e.target.value) } : t));}} disabled={userinfo?.role === "DISTRICT_COORDINATOR"} />
                           </div>
                         </div>
                         <button className="ms-1 btn btn-dark" onClick={(e) => {let m = new Map(initialTaskModifiedMap); m.set(initialTask.id, false); setInitialTaskModifiedMap(m); modifyInitialTask(initialTask.id);}} disabled={!initialTaskModifiedMap.get(initialTask.id)}>Zapisz zmiany</button>
-                        <button className="ms-1 btn btn-danger" onClick={(e) => deleteInitialTask(initialTask.id)}>Usuń</button>
+                        <button className="ms-1 btn btn-danger" onClick={(e) => deleteInitialTask(initialTask.id)} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state === "FINISHED" && !nuclearmode)}>Usuń</button>
                       </div>
                     </div>;
                   })}
                   <div className="list-group-item text-center">
-                    {newInitial === null && <button className="btn btn-dark" onClick={(e) => setNewInitial({text: "", description: ""})}>Dodaj nowe wymaganie</button>}
+                    {newInitial === null && <button className="btn btn-dark" onClick={(e) => setNewInitial({text: "", description: ""})} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)}>Dodaj nowe wymaganie</button>}
                     {newInitial !== null && <div className="d-flex mb-3">
                       <div className="w-100">
                         <div className="input-group mb-1">
@@ -391,7 +450,7 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
                     </div>}
                   </div>
                 </div>
-              </div>
+              </div>}
             </div>
           </div>
 
@@ -417,120 +476,234 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
                     </div>
                   </div>
                   <div className="list-group-item text-center" style={{borderBottomLeftRadius: '0', borderBottomRightRadius: '0', borderBottom: '0'}}>
-                    <button className="btn btn-danger">Utwórz grupę zadań</button>
+                    <button className="btn btn-danger" onClick={(e) => createTaskGroup()}>Utwórz grupę zadań</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div key="id01somethingsomething" className="col">
-            <div className="card shadow-sm">
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <h5 className="mb-0 text-center">Stan jednostki</h5>
-              </div>
-              <div className="card-body p-0">
-                <div className="list-group">
-                  <div className="list-group-item">
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Nazwa</span>
-                      </div>
-                      <input className="form-control" type="text" value="Stan jednostki"/>
-                    </div>
-                    <p className="mt-2 mb-2">
-                      Liczba punktów do zdobycia: <b>50</b>
-                    </p>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Minimum punktów na symbol LEŚNY <img className="img-src-lesna ms-2" style={{ width: '20px', height: '20px' }} /></span>
-                      </div>
-                      <input className="form-control" type="number" min="0" max="6" value="2"/>
-                    </div>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Minimum punktów na symbol PUSZCZAŃSKI <img className="img-src-puszczanska ms-2" style={{ width: '20px', height: '20px' }} /></span>
-                      </div>
-                      <input className="form-control" type="number" min="0" max="10" value="5"/>
-                    </div>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Priorytet wyświetlania</span>
-                      </div>
-                      <input className="form-control" type="number" min="0" max="1000" value="100"/>
-                    </div>
-                  </div>
-                  <div className="list-group-item">
-                    <h4 className="text-center fw-bold">Zadanie: Liczba osób w jednostce</h4>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Treść zadania</span>
-                      </div>
-                      <input className="form-control" type="text" value="Liczba osób w jednostce"/>
-                    </div>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text h-100">Opis zadania</span>
-                      </div>
-                      <textarea className="form-control" rows={3}/>
-                    </div>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Liczba punktów za zadanie</span>
-                      </div>
-                      <input className="form-control" type="number" min="1" max="10" value="5"/>
-                    </div>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Rodzaj zadania</span>
-                      </div>
-                      <select className="form-select">
-                        <option value="BOOLEAN" selected>Tak/Nie</option>
-                        <option value="LINEAR">Liniowe</option>
-                        <option value="LINEAR_REF">Liniowe z odniesieniem</option>
-                        <option value="LINEAR_REF">Paraboliczne z odniesieniem</option>
-                        <option value="REFONLY">Niepunktowane (wartość odniesienia)</option>
-                      </select>
-                    </div>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Obowiązkowe</span>
-                      </div>
-                      <select className="form-select">
-                        <option value="true">Tak</option>
-                        <option value="false" selected>Nie</option>
-                      </select>
-                    </div>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Dziel punkty z kategorią</span>
-                      </div>
-                      <select className="form-select">
-                        <option>Nie dziel punktów</option>
-                        <option selected>Duchowe</option>
-                      </select>
-                    </div>
-                    <div className="input-group mb-1">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Podział punktów</span>
-                      </div>
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Kategoria Stan jednostki:</span>
-                      </div>
-                      <input className="form-control" type="number" min="1" max="10" value="5"/>
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Kategoria Duchowe:</span>
-                      </div>
-                      <input className="form-control" type="number" min="1" max="10" value="5"/>
-                    </div>
-                  </div>
-                  <div className="list-group-item text-center" style={{borderBottomLeftRadius: '0', borderBottomRightRadius: '0', borderBottom: '0'}}>
-                    <button className="btn btn-dark">Dodaj nowe zadanie</button>
-                  </div>
+          {taskGroups.map(((taskGroup) => {
+            const maxPointsInGroup = taskGroups.reduce((prev, tg) => {const primaries = tg.primaryTasks.filter((t) => t.primaryGroup.id === tg.id).reduce((prev, t) => {if(t.type === "REFONLY") return prev; return prev + t.maxPoints * t.split}, 0); const secondaries = tg.primaryTasks.filter((t) => t.secondaryGroup !== null && t.secondaryGroup.id === tg.id).reduce((prev, t) => {if(t.type === "REFONLY") return prev; return prev + t.maxPoints * t.split}, 0); return prev + primaries + secondaries;}, 0);
+            //const maxPointsInGroup = taskGroup.primaryTasks.reduce((prev, task) => {return prev + task.maxPoints * task.split}, 0);
+
+            return <div key={taskGroup.id} className="col">
+              <div className="card shadow-sm">
+                <div className="card-header d-flex justify-content-between align-items-center">
+                  <h5 className="mb-0 text-center" onClick={(e) => {let m = new Map(showTaskGroupMap); m.set(taskGroup.id, !m.get(taskGroup.id)); setShowTaskGroupMap(m);}}><i className={`bi bi-caret-${showTaskGroupMap.get(taskGroup.id) ? 'down' : 'right'}-fill`}></i>{taskGroup.name}</h5>
                 </div>
+                {showTaskGroupMap.get(taskGroup.id) && <div className="card-body p-0">
+                  <div className="list-group">
+                    <div className="list-group-item">
+                      <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Nazwa</span>
+                        </div>
+                        <input className="form-control" type="text" value={taskGroup.name} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, name: e.target.value}})); let m = new Map(taskGroupModifiedMap); m.set(taskGroup.id, true); setTaskGroupModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR"} />
+                      </div>
+                      <p className="mt-2 mb-2">
+                        Liczba punktów do zdobycia: <b>{maxPointsInGroup}</b>
+                      </p>
+                      <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Minimum punktów na symbol LEŚNY <img className="img-src-lesna ms-2" style={{ width: '20px', height: '20px' }} /></span>
+                        </div>
+                        <input className="form-control" type="number" min="0" max={maxPointsInGroup} value={taskGroup.lesnaThreshold} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, lesnaThreshold: Number.parseInt(e.target.value)}})); let m = new Map(taskGroupModifiedMap); m.set(taskGroup.id, true); setTaskGroupModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                      </div>
+                      <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Minimum punktów na symbol PUSZCZAŃSKI <img className="img-src-puszczanska ms-2" style={{ width: '20px', height: '20px' }} /></span>
+                        </div>
+                        <input className="form-control" type="number" min="0" max={maxPointsInGroup} value={taskGroup.puszczanskaThreshold} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, puszczanskaThreshold: Number.parseInt(e.target.value)}})); let m = new Map(taskGroupModifiedMap); m.set(taskGroup.id, true); setTaskGroupModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                      </div>
+                      <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Priorytet wyświetlania</span>
+                        </div>
+                        <input className="form-control" type="number" min="0" max="1000" value={taskGroup.displayPriority} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, displayPriority: Number.parseInt(e.target.value)}})); let m = new Map(taskGroupModifiedMap); m.set(taskGroup.id, true); setTaskGroupModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR"} />
+                      </div>
+                      <div className="d-flex flex-column mb-1">
+                        {taskGroupModifiedMap.get(taskGroup.id) && <button className="btn btn-dark" onClick={(e) => modifyTaskGroup(taskGroup.id)}>Zapisz zmiany</button>}
+                        <button className="btn btn-danger" onClick={(e) => deleteTaskGroup(taskGroup.id)} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)}>Usuń kategorię zadań "{taskGroup.name}"</button>
+                      </div>
+                    </div>
+                    {taskGroup.primaryTasks.map((task) => {
+                      return <div key={task.id} className="list-group-item">
+                        <h4 className="text-center fw-bold" onClick={(e) => {let m = new Map(showTaskMap); m.set(task.id, !m.get(task.id)); setShowTaskMap(m);}}><i className={`bi bi-caret-${showTaskMap.get(task.id) ? 'down' : 'right'}-fill`}></i>Zadanie: {task.name}</h4>
+                        {showTaskMap.get(task.id) && <>
+                          <div className="input-group mb-1">
+                            <div className="input-group-prepend">
+                              <span className="input-group-text">Treść zadania</span>
+                            </div>
+                            <input className="form-control" type="text" value={task.name} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, name: (t.id !== task.id) ? t.name : e.target.value}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                          </div>
+                          <div className="input-group mb-1">
+                            <div className="input-group-prepend">
+                              <span className="input-group-text h-100">Opis zadania</span>
+                            </div>
+                            <textarea className="form-control" rows={3} value={task.description || ""} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, description: (t.id !== task.id) ? t.description : e.target.value}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                          </div>
+                          <div className="input-group mb-1">
+                            <div className="input-group-prepend">
+                              <span className="input-group-text">Rodzaj zadania</span>
+                            </div>
+                            <select className="form-select" value={task.type} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, type: (t.id !== task.id) ? t.type : e.target.value as CategorizationTaskType}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} >
+                              <option value="BOOLEAN">Tak/Nie</option>
+                              <option value="LINEAR">Liniowe</option>
+                              <option value="LINEAR_REF">Liniowe z odniesieniem</option>
+                              <option value="LINEAR_REF">Paraboliczne z odniesieniem</option>
+                              <option value="REFONLY">Niepunktowane (wartość odniesienia)</option>
+                            </select>
+                          </div>
+                          {task.type !== "REFONLY" && <div className="input-group mb-1">
+                            <div className="input-group-prepend">
+                              <span className="input-group-text">Maksymalna liczba punktów za zadanie</span>
+                            </div>
+                            <input className="form-control" type="number" min="0" value={task.maxPoints} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, maxPoints: (t.id !== task.id) ? t.maxPoints : Number.parseInt(e.target.value)}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                          </div>}
+                          {(task.type !== "BOOLEAN" && task.type !== "REFONLY") && <div className="input-group mb-1">
+                            <div className="input-group-prepend">
+                              <span className="input-group-text">Mnożnik</span>
+                            </div>
+                            <input className="form-control" type="number" min="0" value={task.multiplier || "0"} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, multiplier: (t.id !== task.id) ? t.multiplier : Number.parseInt(e.target.value)}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                          </div>}
+                          {task.type === "REFONLY" && <div className="input-group mb-1">
+                            <div className="input-group-prepend">
+                              <span className="input-group-text">Wartość odniesienia</span>
+                            </div>
+                            <select className="form-select" value={task.refValId || "NONE"} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, refValId: (t.id !== task.id) ? t.refValId : Number.parseInt(e.target.value)}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} >
+                              <option value="NONE" disabled>Wybierz...</option>
+                              <option value="0">Tak/Nie</option>
+                              <option value="1">Liniowe</option>
+                            </select>
+                            <div className="input-group-append">
+                              <input className="form-control" type="text" placeholder="Wyszukaj po nazwie..." disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+                            </div>
+                          </div>}
+                          <div className="input-group mb-1">
+                            <div className="input-group-prepend">
+                              <span className="input-group-text">Obowiązkowe</span>
+                            </div>
+                            <select className="form-select" value={task.obligatory ? 'true' : 'false'} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, obligatory: (t.id !== task.id) ? t.obligatory : (e.target.value === 'true')}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} >
+                              <option value="true">Tak</option>
+                              <option value="false">Nie</option>
+                            </select>
+                          </div>
+                          <div className="input-group mb-1">
+                            <div className="input-group-prepend">
+                              <span className="input-group-text">Dziel punkty z kategorią</span>
+                            </div>
+                            <select className="form-select" value={task.secondaryGroup === null ? 'NONE' : task.secondaryGroup.id} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, secondaryGroup: (t.id !== task.id) ? t.secondaryGroup : (e.target.value === "NONE" ? null : {id: Number.parseInt(e.target.value), name: taskGroups.filter(g => (g.id === Number.parseInt(e.target.value)))[0].name })}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} >
+                              <option value="NONE">Nie dziel punktów</option>
+                              {taskGroups.filter((tg) => tg.id !== taskGroup.id).map((tg) => <option key={tg.id} value={tg.id}>{tg.name}</option>)}
+                            </select>
+                          </div>
+                          {task.secondaryGroup !== null && <div className="input-group mb-1 align-items-center">
+                            <span className="input-group-text">Podział punktów</span>
+                            <span className="input-group-text">Kategoria {task.primaryGroup.name}: {(task.maxPoints * task.split).toFixed(1)} pkt</span>
+
+                            <input className="form-range flex-fill mx-2 w-auto" type="range" min="0" max="1" step={0.5 / task.maxPoints} value={task.split} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, split: (t.id !== task.id) ? t.split : Number.parseFloat(e.target.value)}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
+
+                            <span className="input-group-text">Kategoria {task.secondaryGroup.name}: {(task.maxPoints * (1-task.split)).toFixed(1)} pkt</span>
+                          </div>}
+                          <div className="d-flex flex-column mb-1">
+                            {taskModifiedMap.get(task.id) && <button className="btn btn-dark">Zapisz zmiany</button>}
+                            <button className="btn btn-danger" disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)}>Usuń zadanie</button>
+                          </div>
+                        </>}
+                      </div>
+                    })}
+                    
+                    {newTask.primaryGroup.id !== taskGroup.id &&<div className="list-group-item text-center" style={{borderBottomLeftRadius: '0', borderBottomRightRadius: '0', borderBottom: '0'}}>
+                      <button className="btn btn-dark" onClick={(e) => setNewTask({...newTask, primaryGroup: {id: taskGroup.id, name: taskGroup.name}})} disabled={userinfo?.role === "DISTRICT_COORDINATOR"}>Dodaj nowe zadanie</button>
+                    </div>}
+
+                    {newTask.primaryGroup.id === taskGroup.id && <div className="list-group-item">
+                      <h4 className="text-center fw-bold">Nowe zadanie</h4>
+                      <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Treść zadania</span>
+                        </div>
+                        <input className="form-control" type="text" value={newTask.name} onChange={(e) => {setNewTask({...newTask, name: e.target.value})}} />
+                      </div>
+                      <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text h-100">Opis zadania</span>
+                        </div>
+                        <textarea className="form-control" rows={3} value={newTask.description || ""} onChange={(e) => {setNewTask({...newTask, description: e.target.value})}} />
+                      </div>
+                      <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Rodzaj zadania</span>
+                        </div>
+                        <select className="form-select" value={newTask.type} onChange={(e) => {setNewTask({...newTask, type: e.target.value as CategorizationTaskType})}}>
+                          <option value="BOOLEAN">Tak/Nie</option>
+                          <option value="LINEAR">Liniowe</option>
+                          <option value="LINEAR_REF">Liniowe z odniesieniem</option>
+                          <option value="LINEAR_REF">Paraboliczne z odniesieniem</option>
+                          <option value="REFONLY">Niepunktowane (wartość odniesienia)</option>
+                        </select>
+                      </div>
+                      {newTask.type !== "REFONLY" && <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Maksymalna liczba punktów za zadanie</span>
+                        </div>
+                        <input className="form-control" type="number" min="0" value={newTask.maxPoints} onChange={(e) => {setNewTask({...newTask, maxPoints: Number.parseInt(e.target.value)})}} />
+                      </div>}
+                      {(newTask.type !== "BOOLEAN" && newTask.type !== "REFONLY") && <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Mnożnik</span>
+                        </div>
+                        <input className="form-control" type="number" min="0" value={newTask.multiplier || "0"} onChange={(e) => {setNewTask({...newTask, multiplier: Number.parseInt(e.target.value)})}} />
+                      </div>}
+                      {newTask.type === "REFONLY" && <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Wartość odniesienia</span>
+                        </div>
+                        <select className="form-select" value={newTask.refValId || "NONE"} onChange={(e) => {setNewTask({...newTask, refValId: Number.parseInt(e.target.value)})}} >
+                          <option value="NONE" disabled>Wybierz...</option>
+                          <option value="0">Tak/Nie</option>
+                          <option value="1">Liniowe</option>
+                        </select>
+                        <div className="input-group-append">
+                          <input className="form-control" type="text" placeholder="Wyszukaj po nazwie..." />
+                        </div>
+                      </div>}
+                      <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Obowiązkowe</span>
+                        </div>
+                        <select className="form-select" value={newTask.obligatory ? 'true' : 'false'} onChange={(e) => {setNewTask({...newTask, obligatory: e.target.value === 'true'})}} >
+                          <option value="true">Tak</option>
+                          <option value="false">Nie</option>
+                        </select>
+                      </div>
+                      <div className="input-group mb-1">
+                        <div className="input-group-prepend">
+                          <span className="input-group-text">Dziel punkty z kategorią</span>
+                        </div>
+                        <select className="form-select" value={newTask.secondaryGroup === null ? 'NONE' : newTask.secondaryGroup.id} onChange={(e) => {setNewTask({...newTask, secondaryGroup: (e.target.value === "NONE" ? null : {id: Number.parseInt(e.target.value), name: "TODO"})})}} >
+                          <option value="NONE">Nie dziel punktów</option>
+                          {taskGroups.filter((tg) => (tg.id !== newTask.primaryGroup.id)).map((tg) => <option key={tg.id} value={tg.id}>{tg.name}</option>)}
+                        </select>
+                      </div>
+                      {newTask.secondaryGroup !== null && <div className="input-group mb-1 align-items-center">
+                        <span className="input-group-text">Podział punktów</span>
+                        <span className="input-group-text">Kategoria {newTask.primaryGroup.name}: {(newTask.maxPoints * newTask.split).toFixed(1)} pkt</span>
+
+                        <input className="form-range flex-fill mx-2 w-auto" type="range" min="0" max="1" step={0.5 / newTask.maxPoints} value={newTask.split} onChange={(e) => {setNewTask({...newTask, split: Number.parseFloat(e.target.value)})}} />
+
+                        <span className="input-group-text">Kategoria {newTask.secondaryGroup.name}: {(newTask.maxPoints * (1-newTask.split)).toFixed(1)} pkt</span>
+                      </div>}
+                      <div className="d-flex flex-column mb-1">
+                        <button className="btn btn-dark">Dodaj zadanie</button>
+                      </div>
+                    </div>}
+                  </div>
+                </div>}
               </div>
             </div>
-          </div>
+          }))}
         </div>
 
         <div className="modal fade" id="nuclearModeModal" tabIndex={-1} aria-hidden="true">

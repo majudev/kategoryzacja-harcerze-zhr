@@ -2,11 +2,13 @@ import { Router, Request, Response } from "express";
 
 import { PrismaClient } from "@prisma/client";
 import initialRouter from "./initial";
+import tasksRouter from "./tasks";
 
 const router = Router();
 const prisma = new PrismaClient();
 
 router.use('/initial', initialRouter);
+router.use('/tasks', tasksRouter);
 
 router.get('/shallow', async (req: Request, res: Response) => {
   const catYears = await prisma.categorizationYear.findMany({
@@ -90,12 +92,16 @@ router.get('/:categorizationYearId(\\d+)', async (req: Request, res: Response) =
               maxPoints: true,
               multiplier: true,
 
+              refValId: true,
+
               obligatory: true,
             },
           },
 
           lesnaThreshold: true,
           puszczanskaThreshold: true,
+
+          displayPriority: true,
         },
         orderBy: [
           {
