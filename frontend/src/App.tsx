@@ -12,6 +12,8 @@ import Root from './root/Root';
 import Kategoryzacja from './kategoryzacja/Kategoryzacja';
 import Ranking from './ranking/Ranking';
 import Admin from './admin/Admin';
+import PasswordResetRequest from './login/PasswordResetRequest';
+import PasswordReset from './login/PasswordReset';
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -66,6 +68,8 @@ function App(): ReactElement {
           <Route path="/login" element={<Login reloadHook={reloadHook} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/activate/:activationkey" element={<Activate />} />
+          <Route path="/passwordreset" element={<PasswordResetRequest />} />
+          <Route path="/reset/:passwordResetKey" element={<PasswordReset />} />
           <Route path="/logout" element={<Logout reloadHook={reloadHook} />} />
           <Route path="/welcome" element={<WelcomeOverlay reloadHook={reloadHook}/>} />
 

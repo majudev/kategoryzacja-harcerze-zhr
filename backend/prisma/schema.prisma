@@ -28,6 +28,7 @@ model User {
   email       String @unique
   password    String?
   activationKey String? @default(uuid()) @unique
+  passwordReset String? @unique
   createdAt   DateTime @default(now())
   lastLogin   DateTime @default(now())
 

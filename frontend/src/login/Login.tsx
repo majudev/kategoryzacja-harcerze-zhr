@@ -106,6 +106,9 @@ const Login = ({reloadHook} : {reloadHook : React.Dispatch<React.SetStateAction<
         <p className="mt-3 text-center">
           Nie masz konta? <Link to="/register">Zarejestruj się</Link>
         </p>
+        <p className="mt-1 text-center">
+          Zapomniałeś hasła? <Link to="/passwordreset">Zresetuj hasło</Link>
+        </p>
       </div>
     </div>
   );

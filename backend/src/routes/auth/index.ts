@@ -3,6 +3,7 @@ import { Router, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 import svgCaptcha from "svg-captcha";
+import { randomUUID } from 'crypto';
 import googleapiRouter from "./googleapi";
 
 const router = Router();
@@ -69,6 +70,12 @@ router.post("/login", async (req: Request, res: Response) => {
         res.status(400).json({ status: "error", message: "Email, password and captcha are required" });
         return;
     }
+    if (req.session.captcha !== captcha){
+        req.session.captcha = undefined;
+        res.status(400).json({ status: "error", message: "Wrong captcha" });
+        return;
+    }
+    req.session.captcha = undefined;
 
     const user = await prisma.user.findUnique({
         where: {
@@ -118,26 +125,6 @@ router.get("/logout", (req: Request, res: Response) => {
     });
 });
 
-// Password Reset (Dummy)
-/*router.post("/reset-password", async (req: Request, res: Response) => {
-    const { email, newPassword } = req.body;
-
-    const user = await prisma.user.findUnique({ where: { email } });
-
-    if (!user) {
-        return res.status(404).json({ message: "User not found" });
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 14);
-
-    await prisma.user.update({
-        where: { email },
-        data: { password: hashedPassword }
-    });
-
-    res.json({ message: "Password reset successful" });
-});*/
-
 router.post("/activate/:key", async (req: Request, res: Response) => {
     const activationKey = req.params.key;
 
@@ -161,6 +148,86 @@ router.post("/activate/:key", async (req: Request, res: Response) => {
     });
 
     res.status(201).end();
+});
+
+router.post("/passwordreset/request", async (req: Request, res: Response) => {
+    const { email, captcha } = req.body;
+
+    if (!email || !captcha) {
+        res.status(400).json({ status: "error", message: "Email and captcha are required" });
+        return;
+    }
+    if (req.session.captcha !== captcha){
+        req.session.captcha = undefined;
+        res.status(400).json({ status: "error", message: "Wrong captcha" });
+        return;
+    }
+    req.session.captcha = undefined;
+
+    try {
+        const user = await prisma.user.update({
+            where: {
+                email,
+            },
+            data: {
+                passwordReset: randomUUID(),
+            },
+            select: {
+                email: true,
+                passwordReset: true,
+            }
+        });
+
+        // Placeholder for sending confirmation email
+        console.log("Send password reset email to: ", user.email, " - key ", user.passwordReset);
+
+        res.status(204).end();
+    } catch (error) {
+        res.status(500).json({ message: "Error creating password reset request", error });
+    }
+});
+
+router.post("/passwordreset", async (req: Request, res: Response) => {
+    const { password, passwordResetKey } = req.body;
+
+    if (!password || !passwordResetKey) {
+        res.status(400).json({ status: "error", message: "New password and password reset key are required" });
+        return;
+    }
+
+    try {
+        const keyValid = await prisma.user.count({
+            where: {
+                passwordReset: passwordResetKey,
+            }
+        }) > 0;
+        if(!keyValid){
+            res.status(409).json({ status: "error", message: "No such password reset key found in the database" });
+            return;
+        }
+
+        const hashedPassword = await bcrypt.hash(password, Number(process.env.BCRYPT_ROUNDS || 14));
+
+        const user = await prisma.user.update({
+            where: {
+                passwordReset: passwordResetKey
+            },
+            data: {
+                passwordReset: null,
+                password: hashedPassword,
+            },
+            select: {
+                email: true,
+            }
+        });
+
+        // Placeholder for sending confirmation email
+        console.log("Send password reset confirmation email to: ", user.email);
+
+        res.status(204).end();
+    } catch (error) {
+        res.status(500).json({ message: "Error resetting password", error });
+    }
 });
 
 export default router;
