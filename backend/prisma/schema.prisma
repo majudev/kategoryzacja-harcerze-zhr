@@ -92,6 +92,12 @@ enum CategorizationYearState {
   FINISHED
 }
 
+enum GroupToken {
+  POLOWA
+  LESNA
+  PUSZCZANSKA
+}
+
 model CategorizationYear {
   id          Int @id @default(autoincrement())
   name        String
@@ -121,6 +127,9 @@ model CategorizationTaskGroup {
 
   lesnaThreshold        Int
   puszczanskaThreshold  Int
+
+  lesnaObligatoryThreshold        GroupToken @default(POLOWA) /// TODO: implement it in the rest of the code
+  puszczanskaObligatoryThreshold  GroupToken @default(POLOWA) /// it allows to require taskgroup to be at certain token in order to achieve given category, effectively making it mandatory
 
   displayPriority Int @default(100)
 }
