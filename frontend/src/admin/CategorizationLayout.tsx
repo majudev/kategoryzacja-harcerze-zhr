@@ -268,8 +268,8 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <h5 className="text-muted mb-3">Ranking</h5>
-                {categorizationYear.ranking ? 'Przeliczony' : 'Dynamiczny'}<br/>
-                <button className="btn btn-sm btn-danger" disabled={!nuclearmode}>Przelicz</button>
+                {categorizationYear.ranking ? 'Przeliczony' : `Dynamiczny ${categorizationYear.state === "FINISHED" ? "(!!!)" : ''}`}<br/>
+                {categorizationYear.state === "FINISHED" && <button className="btn btn-sm btn-danger" disabled={categorizationYear.ranking && !nuclearmode}>{categorizationYear.ranking ? 'Przelicz ponownie' : 'Przelicz'}</button>}
               </div>
             </div>
           </div>
