@@ -144,8 +144,7 @@ model CategorizationTask {
 
   type        CategorizationTaskType
   maxPoints   Int
-  multiplier  Int?
-  //formula     String?
+  multiplier  Float?
   refValId    Int?
   refVal      CategorizationTask? @relation("ctask_refval", fields: [refValId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   refVals     CategorizationTask[] @relation("ctask_refval")
