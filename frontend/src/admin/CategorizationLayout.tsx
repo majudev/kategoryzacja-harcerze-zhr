@@ -533,8 +533,19 @@ const CategorizationLayout = ({userinfo, categorizationId} : {userinfo: UserInfo
           </div>
 
           {taskGroups.map(((taskGroup) => {
-            const maxPointsInGroup = taskGroups.reduce((prev, tg) => {const primaries = tg.primaryTasks.filter((t) => t.primaryGroup.id === tg.id).reduce((prev, t) => {if(t.type === "REFONLY") return prev; return prev + t.maxPoints * t.split}, 0); const secondaries = tg.primaryTasks.filter((t) => t.secondaryGroup !== null && t.secondaryGroup.id === tg.id).reduce((prev, t) => {if(t.type === "REFONLY") return prev; return prev + t.maxPoints * t.split}, 0); return prev + primaries + secondaries;}, 0);
-            //const maxPointsInGroup = taskGroup.primaryTasks.reduce((prev, task) => {return prev + task.maxPoints * task.split}, 0);
+            const allTasks = taskGroups.flatMap((tg) => tg.primaryTasks);
+            const primaries = allTasks.filter((t) => t.primaryGroup.id === taskGroup.id);
+            const primaryPoints = primaries.reduce((prev, t) => {
+              if(t.type === "REFONLY") return prev;
+              if(t.secondaryGroup === null) return prev + t.maxPoints;
+              return prev + t.maxPoints * t.split;
+            }, 0);
+            const secondaries = allTasks.filter((t) => (t.secondaryGroup !== null && t.secondaryGroup.id === taskGroup.id));
+            const secondaryPoints = secondaries.reduce((prev, t) => {
+              if(t.type === "REFONLY") return prev;
+              return prev + t.maxPoints * (1-t.split);
+            }, 0);
+            const maxPointsInGroup = primaryPoints + secondaryPoints;
 
             return <div key={taskGroup.id} className="col">
               <div className="card shadow-sm">
