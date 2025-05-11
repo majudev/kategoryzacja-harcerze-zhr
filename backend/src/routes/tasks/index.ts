@@ -188,9 +188,6 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
       const tasksWithRefVals = taskGroup.tasks.map((task) => {
         if((task.type !== "LINEAR_REF" && task.type !== "PARABOLIC_REF") || task.refValId === null) return task;
 
-        console.log(task);
-        console.log('RefValId: ' + task.refValId);
-
         const refVal = mergedTaskGroups.flatMap((tg) => tg.tasks).filter(t => t.id === task.refValId)[0].points;
         const rawScore = calculateTaskScore(task.type, task.value, task.maxPoints, task.multiplier, refVal);
         let primaryMaxPoints = undefined;

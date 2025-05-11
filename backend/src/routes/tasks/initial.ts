@@ -82,7 +82,7 @@ router.get('/', async (req: Request, res: Response) => {
     const teamId = user.teamId;
 
     const tasks = await getInitialTasks(teamId, categorizationYearId);
-    console.log(tasks);
+    //console.log(tasks);
 
     res.status(200).json(tasks);
 });
