@@ -132,6 +132,155 @@ router.get('/:categorizationYearId(\\d+)', async (req: Request, res: Response) =
   });
 });
 
+router.post('/', async (req: Request, res: Response) => {
+  let { name, sourceId } = req.body;
+
+  if ((!name || typeof name !== 'string')
+   || (sourceId !== undefined && typeof sourceId !== 'number')) {
+    res.status(400).json({ status: "error", message: "body required" });
+    return;
+  }
+
+  // Only ADMIN and TOPLEVEL can do this
+  if(req.session.userRole !== "TOPLEVEL_COORDINATOR" && req.session.userRole !== "ADMIN"){
+    res.status(403).json({ message: "Forbidden" });
+    return;
+  }
+
+  if(sourceId === undefined){
+    await prisma.categorizationYear.create({
+      data: {
+        name: name,
+      }
+    });
+
+    res.status(204).end();
+    return;
+  }
+
+  // Extract data of the original object
+  const orig = await prisma.categorizationYear.findUnique({
+    where: { 
+      id: sourceId,
+    },
+    include: {
+      initialTasks: true,
+      taskGroup: {
+        include: {
+          primaryTasks: {
+            include: { 
+              refVals: true,
+            },
+          },
+          secondaryTasks: {
+            include: {
+              refVals: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  if(!orig){
+    res.status(404).json({ message: "no such categorization year exists" });
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // Create new year with DRAFT state, omit ranking, make sure yearScalars contains only scalars
+    const {
+      id: _oldId,
+      createdAt: _oldCreatedAt,
+      state: _oldState,
+      initialTasks: origInitialTasks,
+      taskGroup: origTaskGroups,
+      ...yearScalars                // this now contains only name, thresholds, etc.
+    } = orig;
+
+    // 3. Create the new year with only scalars + forced DRAFT state
+    const newYear = await tx.categorizationYear.create({
+      data: {
+        ...yearScalars,
+        state: 'DRAFT',
+        name: name,
+      },
+    });
+
+    // 4. Clone task groups
+    const groupMap = new Map<number, number>();
+    for (const grp of origTaskGroups) {
+      // Destructure away the relational arrays primaryTasks & secondaryTasks
+      const {
+        id: oldGid,
+        categorizationYearId,
+        primaryTasks,        // ← remove this
+        secondaryTasks,      // ← and this
+        ...grpScalars        // now contains only name, thresholds, etc.
+      } = grp;
+
+      const newGrp = await tx.categorizationTaskGroup.create({
+        data: {
+          ...grpScalars,
+          categorizationYear: { connect: { id: newYear.id } },
+        },
+      });
+      groupMap.set(oldGid, newGrp.id);
+    }
+
+    const taskMap = new Map<number, number>();
+    const allTasks = [
+      ...orig.taskGroup.flatMap(g => g.primaryTasks),
+      ...orig.taskGroup.flatMap(g => g.secondaryTasks),
+    ];
+    for (const t of allTasks) {
+      const {
+        id: oldTid,
+        primaryGroupId,
+        secondaryGroupId,
+        refValId,
+        refVals,
+        ...tData
+      } = t;
+
+      const newTask = await tx.categorizationTask.create({
+        data: {
+          ...tData,
+          primaryGroup: { connect: { id: groupMap.get(primaryGroupId)! } },
+          ...(secondaryGroupId
+            ? { secondaryGroup: { connect: { id: groupMap.get(secondaryGroupId)! } } }
+            : {}),
+        },
+      });
+      taskMap.set(oldTid, newTask.id);
+    }
+
+    for (const t of allTasks) {
+      if (t.refValId) {
+        const newId = taskMap.get(t.id)!;
+        const newRef = taskMap.get(t.refValId);
+        if (newRef) {
+          await tx.categorizationTask.update({
+            where: { id: newId },
+            data: { refVal: { connect: { id: newRef } } },
+          });
+        }
+      }
+    }
+
+    for (const it of orig.initialTasks) {
+      const { id: oldIt, categorizationYearId, ...itData } = it;
+      await tx.initialTask.create({
+        data: {
+          ...itData,
+          categorizationYear: { connect: { id: newYear.id } },
+        },
+      });
+    }
+  });
+
+  res.status(204).end();
+});
+
 router.patch('/:categorizationYearId(\\d+)', async (req: Request, res: Response) => {
   const categorizationYearId = Number.parseInt(req.params.categorizationYearId);
   let { name, state, lesnaLesneThreshold, lesnaPuszczanskieThreshold, puszczanskaLesnaThreshold, puszczanskaPuszczanskieThreshold } = req.body;
@@ -176,6 +325,148 @@ router.patch('/:categorizationYearId(\\d+)', async (req: Request, res: Response)
     select: {
       id: true,
     }
+  });
+
+  res.status(204).end();
+});
+
+router.delete('/:categorizationYearId(\\d+)', async (req: Request, res: Response) => {
+  const categorizationYearId = Number.parseInt(req.params.categorizationYearId);
+
+  // Only ADMIN and TOPLEVEL can do this
+  if(req.session.userRole !== "TOPLEVEL_COORDINATOR" && req.session.userRole !== "ADMIN"){
+    res.status(403).json({ message: "Forbidden" });
+    return;
+  }
+
+  const catYear = await prisma.categorizationYear.findUnique({
+    where: {
+      id: categorizationYearId,
+    },
+    select: {
+      id: true,
+      state: true,
+
+      initialTasks: {
+        select: {
+          id: true,
+          joints: {
+            select: {
+              taskId: true,
+              teamId: true,
+            }
+          }
+        }
+      },
+      taskGroup: {
+        select: {
+          primaryTasks: {
+            select: {
+              id: true,
+              joints: {
+                select: {
+                  taskId: true,
+                  teamId: true,
+                }
+              }
+            }
+          },
+          secondaryTasks: {
+            select: {
+              id: true,
+              joints: {
+                select: {
+                  taskId: true,
+                  teamId: true,
+                }
+              }
+            }
+          }
+        }
+      },
+    }
+  });
+  if(catYear === null){
+    res.status(404).json({ message: "no such categorization year exists" });
+    return;
+  }
+  if(catYear.state !== "DRAFT"){
+    res.status(404).json({ message: "you can delete only in draft state" });
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // Remove initial tasks
+    const initialJointsToDelete = catYear.initialTasks
+      .flatMap((task) => task.joints)
+      .map((joint) => ({
+        taskId: joint.taskId,
+        teamId: joint.teamId,
+      }));
+
+    const initialTasksToDelete = catYear.initialTasks
+      .map((task) => ({
+        id: task.id,
+      }));
+
+    if(initialJointsToDelete) await tx.initialTaskJoint.deleteMany({
+      where: {
+        OR: initialJointsToDelete,
+      },
+    });
+
+    if(initialTasksToDelete) await tx.initialTask.deleteMany({
+      where: {
+        OR: initialTasksToDelete,
+      },
+    });
+
+    // Remove tasks
+    const allTasks = [
+      ...catYear.taskGroup.flatMap((group) => group.primaryTasks),
+      ...catYear.taskGroup.flatMap((group) => group.secondaryTasks),
+    ];
+  
+    const taskJoints = allTasks
+      .flatMap((t) => t.joints)
+      .map(({ taskId, teamId }) => ({ taskId, teamId }));
+    if (taskJoints.length) {
+      await tx.taskJoint.deleteMany({
+        where: {
+          OR: taskJoints,
+        },
+      });
+    }
+  
+    const tasks = allTasks.map((t) => ({ id: t.id }));
+    if (tasks.length) {
+      await tx.categorizationTask.deleteMany({
+        where: {
+          OR: tasks,
+        },
+      });
+    }
+  
+    // Remove task groups
+    await tx.categorizationTaskGroup.deleteMany({
+      where: {
+        categorizationYearId: catYear.id,
+      },
+    });
+
+    // Remove ranking
+    await tx.ranking.deleteMany({
+      where: {
+        categorizationYearId: catYear.id
+      },
+    });
+  
+    // Remove ranking
+    await tx.categorizationYear.delete({
+      where: {
+        id: catYear.id,
+      },
+    });
   });
 
   res.status(204).end();

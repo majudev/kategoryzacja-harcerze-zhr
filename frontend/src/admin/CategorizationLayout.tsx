@@ -330,6 +330,15 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
     }
   };
 
+  const deleteCategorizationYear = async () => {
+    try {
+      const res = await axios.delete(`${API_ROOT}/admin/categorization/${categorizationId}`);
+      reloadCategorizationsHook(true); // Changed state of categorizations - reload needed
+    } catch (err: any) {
+      alert("Wystąpił błąd");
+    }
+  };
+
     return (
       <>
         {/* Top stats bar */}
@@ -368,7 +377,8 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
                     <button className="btn btn-sm btn-danger" onClick={(e) => changeState("OPEN")} disabled={!nuclearmode}>Otwórz ponownie</button>
                     <button className="btn btn-sm btn-dark mt-1" onClick={(e) => changeState("DRAFT")}>Zamień na szkic</button>
                   </>:<>
-                    <button className="btn btn-sm btn-dark" onClick={(e) => changeState("OPEN")}>Otwórz</button>
+                    <button className="btn btn-sm btn-dark me-1" onClick={(e) => changeState("OPEN")}>Otwórz</button>
+                    <button className="btn btn-sm btn-danger me-1" onClick={(e) => deleteCategorizationYear()}>Usuń</button>
                   </>}
                 </>}
               </div>

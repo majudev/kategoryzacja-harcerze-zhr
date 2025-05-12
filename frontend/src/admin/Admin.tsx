@@ -10,6 +10,7 @@ import Users from "./Users";
 import CategorizationLayout from "./CategorizationLayout";
 import ToplevelCoordinators from "./ToplevelCoordinators";
 import Administrators from "./Administrators";
+import NewCategorizationLayout from "./NewCategorizationLayout";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -95,7 +96,7 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
     const [activeMenu, setActiveMenu] = useState(menus[0].id);
 
     const [availableCategorizations, setAvailableCategorizations] = useState<Array<CategorizationMenu>>([]);
-    const renderableCategorizations = [
+    const renderableCategorizations = userinfo?.role === "DISTRICT_COORDINATOR" ? availableCategorizations : [
       {
         id: -1,
         name: "Nowa kategoryzacja",
@@ -279,7 +280,11 @@ const Admin = ({userinfo} : {userinfo: UserInfo | null}) => {
               </>
               :
               <>
-                <CategorizationLayout userinfo={userinfo} categorizationId={activeCategorization} reloadCategorizationsHook={reloadCategorizationsHook} />
+                {activeCategorization === -1 ?
+                  <NewCategorizationLayout userinfo={userinfo} availableCategorizations={availableCategorizations} reloadCategorizationsHook={reloadCategorizationsHook} />
+                :
+                  <CategorizationLayout userinfo={userinfo} categorizationId={activeCategorization} reloadCategorizationsHook={reloadCategorizationsHook} />
+                }
                 {/* Top Stats Cards */}
                 {/*!(initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length) && 
                   <StatsBar categorizationDetails={categorizationDetails} userinfo={userinfo} categories={tasklist} myTasksMode={showStarredOnly} />
