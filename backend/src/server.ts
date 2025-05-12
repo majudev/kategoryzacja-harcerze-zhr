@@ -1,4 +1,5 @@
 import express, { Router, Request, Response } from 'express';
+import cors from "cors";
 import router from './routes/index';
 import requestLogger from './utils/requestLogger';
 import { createClient } from 'redis';
@@ -25,6 +26,9 @@ app.use(
 );
 app.use(authman);
 app.use(requestLogger);
+app.use(cors({
+    origin: process.env.BASEURL?.includes('localhost') ? '*' : process.env.BASEURL,
+}))
 
 /* main router */
 app.use('/', router);
