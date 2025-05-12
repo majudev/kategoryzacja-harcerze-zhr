@@ -141,7 +141,6 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
         primaryTasks: undefined,
         secondaryTasks: undefined,
         tasks: populatedTasks,
-        //displayPriority: undefined,
 
         collectedSplitPoints,
         maxSplitPoints,
@@ -158,8 +157,9 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
       const tasksWithRefVals = taskGroup.tasks.map((task) => {
         if((task.type !== "LINEAR_REF" && task.type !== "PARABOLIC_REF") || task.refValId === null) return task;
 
-        const refVal = mergedTaskGroups.flatMap((tg) => tg.tasks).filter(t => t.id === task.refValId)[0].points;
+        const refVal = mergedTaskGroups.flatMap((tg) => tg.tasks).filter(t => t.id === task.refValId)[0].value;
         const rawScore = calculateTaskScore(task.type, task.value, task.maxPoints, task.multiplier, refVal);
+        
         let primaryMaxPoints = undefined;
         let primaryPoints = undefined;
         let secondaryMaxPoints = undefined;
@@ -182,10 +182,21 @@ export const getTasks = async (teamId: number, categorizationYear: number) => {
         };
       });
 
+      const collectedSplitPoints = tasksWithRefVals.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.points : t.secondaryGroupId === taskGroup.id ? t.secondaryPoints as number : t.primaryPoints as number), 0);
+      const maxSplitPoints = tasksWithRefVals.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === taskGroup.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
+      const maxFilteredSplitPoints = tasksWithRefVals.filter(t => t.favourite).reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === taskGroup.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
+      const achievedSymbol = collectedSplitPoints >= taskGroup.puszczanskaThreshold ? "PUSZCZANSKA" : collectedSplitPoints >= taskGroup.lesnaThreshold ? "LESNA" : "POLOWA";
+
       return {
         ...taskGroup,
 
         tasks: tasksWithRefVals,
+
+        collectedSplitPoints,
+        maxSplitPoints,
+        maxFilteredSplitPoints,
+
+        achievedSymbol,
       }
     });
 

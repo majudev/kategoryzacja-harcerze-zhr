@@ -49,7 +49,7 @@ const CategoryLayout = ({categories, category: cat, myTasksMode, toggleMyTask, u
                 />
                 }
                 <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                  {task.name} - {task.type === "REFONLY" ? <b>niepunktowane</b> : <b>{task.secondaryGroupId === null ? task.points : task.secondaryGroupId === cat.id ? task.secondaryPoints : task.primaryPoints}/{task.secondaryGroupId === null ? task.maxPoints : task.secondaryGroupId === cat.id ? task.secondaryMaxPoints : task.primaryMaxPoints} pkt</b>}
+                  {task.name} - {task.type === "REFONLY" ? <b>niepunktowane</b> : <b>{task.secondaryGroupId === null ? task.points.toFixed(1) : task.secondaryGroupId === cat.id ? task.secondaryPoints?.toFixed(1) : task.primaryPoints?.toFixed(1)}/{task.secondaryGroupId === null ? task.maxPoints.toFixed(1) : task.secondaryGroupId === cat.id ? task.secondaryMaxPoints?.toFixed(1) : task.primaryMaxPoints?.toFixed(1)} pkt</b>}
                   {task.type !== "REFONLY" && task.secondaryGroupId !== null && <><br/>
                     <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Zadanie dzielone: max {task.primaryMaxPoints} pkt do {task.primaryGroupName}, osobne max {task.secondaryMaxPoints} pkt do {task.secondaryGroupName}</small>
                   </>}

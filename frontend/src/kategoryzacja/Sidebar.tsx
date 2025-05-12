@@ -65,9 +65,9 @@ const Sidebar = ({type, renderableCategories, initialLock, myTasksMode, setMyTas
                     <>{cat.tasks.filter(t => t.value).length}/{cat.tasks.length}</>
                     :
                     myTasksMode ?
-                    <>{collectedSplitPoints}/{maxSplitPointsAdjusted}</>
+                    <>{collectedSplitPoints.toFixed(1)}/{maxFilteredSplitPoints.toFixed(1)}</>
                     :
-                    <>{collectedSplitPoints}</>
+                    <>{collectedSplitPoints.toFixed(1)}</>
                     }
                   </span>
                   :

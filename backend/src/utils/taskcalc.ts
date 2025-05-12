@@ -18,7 +18,7 @@ export const calculateTaskScore = function(type: 'BOOLEAN'|'LINEAR'|'LINEAR_REF'
     }else if(type === "PARABOLIC_REF"){
         if(refVal === null) throw Error();
         if(refVal === 0) return 0;
-        let val = maxPoints * (value / refVal)^2;
+        let val = maxPoints * Math.pow(value / refVal, 2);
         if(val > maxPoints) val = maxPoints;
         return val;
     }
