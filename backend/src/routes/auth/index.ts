@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 import svgCaptcha from "svg-captcha";
 import { randomUUID } from 'crypto';
+import mailer from "../../utils/mailer";
 import googleapiRouter from "./googleapi";
 
 const router = Router();
@@ -54,7 +55,13 @@ router.post("/register", async (req: Request, res: Response) => {
         });
 
         // Placeholder for sending confirmation email
-        console.log("Send email confirmation to:", user.email, " - key ", user.activationKey);
+        //console.log("Send email confirmation to:", user.email, " - key ", user.activationKey);
+        await mailer.sendMail({
+            from: `"E-Kategoryzacja" <${process.env.SMTP_LOGIN}>`,
+            to: user.email,
+            subject: 'Aktywuj swoje konto',
+            html: "Cześć!<br/><br/>Niedawno założyłeś konto na E-Kategoryzacji. To super! Aby je aktywować, <a href=\"" + (process.env.BASEURL as string) + "/activate/" + user.activationKey + "\">kliknij tutaj</a>.<br/><br/>Pozdrawiamy,<br/>Zespół E-Kategoryzacji",
+        });
 
         res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
@@ -179,7 +186,13 @@ router.post("/passwordreset/request", async (req: Request, res: Response) => {
         });
 
         // Placeholder for sending confirmation email
-        console.log("Send password reset email to: ", user.email, " - key ", user.passwordReset);
+        //console.log("Send password reset email to: ", user.email, " - key ", user.passwordReset);
+        await mailer.sendMail({
+            from: `"E-Kategoryzacja" <${process.env.SMTP_LOGIN}>`,
+            to: user.email,
+            subject: 'Zresetuj hasło',
+            html: "Cześć!<br/><br/>Niedawno prosiłeś o reset hasła na E-Kategoryzacji. Aby dokończyć proces, <a href=\"" + (process.env.BASEURL as string) + "/reset/" + user.passwordReset + "\">kliknij tutaj</a>.<br/><br/>Pozdrawiamy,<br/>Zespół E-Kategoryzacji",
+        });
 
         res.status(204).end();
     } catch (error) {
@@ -222,7 +235,13 @@ router.post("/passwordreset", async (req: Request, res: Response) => {
         });
 
         // Placeholder for sending confirmation email
-        console.log("Send password reset confirmation email to: ", user.email);
+        //console.log("Send password reset confirmation email to: ", user.email);
+        await mailer.sendMail({
+            from: `"E-Kategoryzacja" <${process.env.SMTP_LOGIN}>`,
+            to: user.email,
+            subject: 'Zresetowano hasło',
+            html: "Cześć!<br/><br/>Twoje hasło na E-Kategoryzacji zostało zresetowane.<br/><br/>Jeśli to nie ty je resetowałeś, skontaktuj się z koordynatorem kategoryzacji w Twojej Chorągwi, ponieważ konto mogło zostać skradzione. Na dobry początek zmień hasło do swojej skrzynki e-mail, a także znajdź przycisk który wyloguje Cię ze wszystkich urządzeń. Dla kont Google instrukcja znajduje się <a href=\"https://support.google.com/accounts/answer/3067630?hl=pl\">tutaj</a>. Gdy już to zrobisz, zresetuj hasło do swojej E-Kategoryzacji.<br/><br/>Jeśli to ty zmieniłeś hasło, to nie musisz nic robić. Wszystko jest w porządku.<br/><br/>Pozdrawiamy,<br/>Zespół E-Kategoryzacji",
+        });
 
         res.status(204).end();
     } catch (error) {

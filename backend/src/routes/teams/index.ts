@@ -1,29 +1,10 @@
 import { Router, Request, Response } from "express";
 
 import { PrismaClient } from "@prisma/client";
+import mailer from "../../utils/mailer";
 
 const router = Router();
 const prisma = new PrismaClient();
-
-/*router.get('/', async (req: Request, res: Response) => {
-    if(!req.session.userId){
-        res.status(500).end();
-        return;
-    }
-
-    const teams = await prisma.team.findMany({
-        where: {
-            shadow: false,
-        },
-        select: {
-            id: true,
-            name: true,
-            shadow: true,
-        }
-    });
-
-    res.status(200).json(teams);
-});*/
 
 router.post('/', async (req: Request, res: Response) => {
     const {name, districtId} = req.body;
@@ -221,6 +202,8 @@ router.patch('/grant/:userId', async (req: Request, res: Response) => {
         id: req.session.userId,
     },
     select: {
+        email: true,
+
         teamId: true,
         teamAccepted: true,
         team: {
@@ -257,7 +240,13 @@ router.patch('/grant/:userId', async (req: Request, res: Response) => {
         text: "Dostałeś uprawnienia do drużyny " + user.team.name + ".",
     }
   });
-  ///TODO: send e-mail
+  // Send email to the person who got access
+  await mailer.sendMail({
+    from: `"E-Kategoryzacja" <${process.env.SMTP_LOGIN}>`,
+    to: user.email,
+    subject: 'Przyznano dostęp do drużyny',
+    html: "Cześć!<br/><br/>Dostałeś dostęp do drużyny <i>" + user.team.name + "</i> w systemie E-Kategoryzacja. <a href=\"" + process.env.BASEURL + "/login\">Zaloguj się</a> aby zobaczyć więcej.<br/><br/>Pozdrawiamy,<br/>Zespół E-Kategoryzacji",
+  });
 
   res.status(204).end();
 });
@@ -293,6 +282,7 @@ router.get('/ask-access/:teamId', async (req: Request, res: Response) => {
           owners: {
             select: {
                 id: true,
+                email: true,
                 teamAccepted: true,
             }
           },
@@ -334,7 +324,15 @@ router.get('/ask-access/:teamId', async (req: Request, res: Response) => {
             }
         })
     });
-    ///TODO: send e-mail
+    // Send email to each of the owners
+    for await (const owner of team.owners) {
+        await mailer.sendMail({
+            from: `"E-Kategoryzacja" <${process.env.SMTP_LOGIN}>`,
+            to: owner.email,
+            subject: 'Prośba o dostęp do drużyny',
+            html: "Cześć!<br/><br/>Osoba o adresie e-mail <b>" + user.email + "</b> prosi o dostęp do Twojej drużyny w systemie E-Kategoryzacja. <a href=\"" + process.env.BASEURL + "/login\">Zaloguj się</a> aby przyznać dostęp lub odrzucić żądanie.<br/><br/>Pozdrawiamy,<br/>Zespół E-Kategoryzacji",
+        });
+    }
 
     // Send notification to district coordinators
     /*const coordinatorNotificationText = "Użytkownik " + user.email + " chce uzyskać dostęp do drużyny " + team.name + ". [GRANT_ACCESS=" + user.id + "]";

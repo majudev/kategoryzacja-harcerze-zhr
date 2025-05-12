@@ -10,6 +10,8 @@ services:
     environment:
       OAUTH_GOOGLE_ID:
       OAUTH_GOOGLE_SECRET:
+      SMTP_LOGIN:
+      SMTP_PASSWORD:
       BASEURL: http://localhost:8080
       REDIS_URL: redis://redis:6379
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
@@ -20,6 +22,8 @@ services:
     environment:
       OAUTH_GOOGLE_ID:
       OAUTH_GOOGLE_SECRET:
+      SMTP_LOGIN:
+      SMTP_PASSWORD:
       BASEURL: http://localhost:8080
       REDIS_URL: redis://redis:6379
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
@@ -30,6 +34,8 @@ services:
     environment:
       OAUTH_GOOGLE_ID:
       OAUTH_GOOGLE_SECRET:
+      SMTP_LOGIN:
+      SMTP_PASSWORD:
       BASEURL: http://localhost:8080
       REDIS_URL: redis://redis:6379
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
@@ -40,6 +46,8 @@ services:
     environment:
       OAUTH_GOOGLE_ID:
       OAUTH_GOOGLE_SECRET:
+      SMTP_LOGIN:
+      SMTP_PASSWORD:
       BASEURL: http://localhost:8080
       REDIS_URL: redis://redis:6379
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja

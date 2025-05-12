@@ -9,7 +9,6 @@ const Register = () => {
   const [form, setForm] = useState({ email: "", password: "", repeatpassword: "", captcha: "" });
   const [captchaSvg, setCaptchaSvg] = useState("");
   const [loading, setLoading] = useState(false);
-  const [interror, setInterror] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -28,9 +27,6 @@ const Register = () => {
 
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    if(form.password.length < 8) setInterror("Hasło jest zbyt krótkie");
-    else if(form.password !== form.repeatpassword) setInterror("Hasła nie pasują do siebie");
-    else setInterror("");
   };
 
   const handleSubmit = async (e: any) => {
@@ -49,6 +45,10 @@ const Register = () => {
       setLoading(false);
     }
   };
+
+  const interror = (form.password.length < 8) ? "Hasło jest zbyt krótkie"
+                  : (form.password !== form.repeatpassword) ? "Hasła nie pasują do siebie"
+                  : "";
 
   return (
     <div className="d-flex vh-100 justify-content-center align-items-center angled-bg">
