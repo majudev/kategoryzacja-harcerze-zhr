@@ -61,19 +61,6 @@ router.post('/', async (req: Request, res: Response) => {
       res.status(400).json({ message: "with task type " + type + " there has to be refValId set" });
       return;
     }
-  }else refValId = null;
-
-  if(type === "REFONLY"){
-    secondaryGroupId = null;
-    obligatory = true;
-    maxPoints = 0;
-  }
-
-  if(secondaryGroupId !== undefined && secondaryGroupId !== null){
-    if(!split){
-      res.status(400).json({ message: "if secondaryGroupId is provided, there has to be split set" });
-      return;
-    }
 
     const refValExists = await prisma.categorizationTask.count({
       where: {
@@ -94,6 +81,19 @@ router.post('/', async (req: Request, res: Response) => {
     }) > 0;
     if(!refValExists){
       res.status(409).json({ message: "provided refValId is invalid" });
+      return;
+    }
+  }else refValId = null;
+
+  if(type === "REFONLY"){
+    secondaryGroupId = null;
+    obligatory = true;
+    maxPoints = 0;
+  }
+
+  if(secondaryGroupId !== undefined && secondaryGroupId !== null){
+    if(!split){
+      res.status(400).json({ message: "if secondaryGroupId is provided, there has to be split set" });
       return;
     }
   }else split = 1;
@@ -154,28 +154,6 @@ router.patch('/:taskId(\\d+)', async (req: Request, res: Response) => {
     return;
   }
 
-  if(type === undefined || type === null) type = task.type;
-  if(type === "LINEAR" || type === "LINEAR_REF" || type === "PARABOLIC_REF"){
-    if(multiplier === undefined) multiplier = task.multiplier;
-    if(!multiplier){
-      res.status(400).json({ message: "with task type " + type + " there has to be multiplier set" });
-      return;
-    }
-  }else multiplier = null;
-
-  if(type === "LINEAR_REF" || type === "PARABOLIC_REF"){
-    if(refValId === undefined) refValId = task.refValId;
-    if(!refValId){
-      res.status(400).json({ message: "with task type " + type + " there has to be refValId set" });
-      return;
-    }
-  }else refValId = null;
-
-  if(type === "REFONLY"){
-    secondaryGroupId = null;
-    obligatory = true;
-  }
-
   if(primaryGroupId === undefined || primaryGroupId === null) primaryGroupId = task.primaryGroupId;
   if(secondaryGroupId === undefined) secondaryGroupId = task.secondaryGroupId;
   const taskGroup = await prisma.categorizationTaskGroup.findUnique({
@@ -196,11 +174,25 @@ router.patch('/:taskId(\\d+)', async (req: Request, res: Response) => {
     return;
   }
 
-  if(split === undefined || split === null) split = task.split;
+  if(type === undefined || type === null) type = task.type;
+  if(type === "LINEAR" || type === "LINEAR_REF" || type === "PARABOLIC_REF"){
+    if(multiplier === undefined) multiplier = task.multiplier;
+    if(!multiplier){
+      res.status(400).json({ message: "with task type " + type + " there has to be multiplier set" });
+      return;
+    }
+  }else multiplier = null;
+
+  if(type === "REFONLY"){
+    secondaryGroupId = null;
+    obligatory = true;
+  }
+
   if(refValId === undefined) refValId = task.refValId;
-  if(secondaryGroupId !== null){
-    if(!split){
-      res.status(400).json({ message: "if secondaryGroupId is provided, there has to be split set" });
+  if(type === "LINEAR_REF" || type === "PARABOLIC_REF"){
+    if(refValId === undefined) refValId = task.refValId;
+    if(!refValId){
+      res.status(400).json({ message: "with task type " + type + " there has to be refValId set" });
       return;
     }
 
@@ -223,6 +215,14 @@ router.patch('/:taskId(\\d+)', async (req: Request, res: Response) => {
     }) > 0;
     if(!refValExists){
       res.status(409).json({ message: "provided refValId is invalid" });
+      return;
+    }
+  }else refValId = null;
+
+  if(split === undefined || split === null) split = task.split;
+  if(secondaryGroupId !== null){
+    if(!split){
+      res.status(400).json({ message: "if secondaryGroupId is provided, there has to be split set" });
       return;
     }
   }else split = 1;

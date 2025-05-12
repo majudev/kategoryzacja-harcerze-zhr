@@ -136,6 +136,9 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
   const [taskRefFilterMap, setTaskRefFilterMap] = useState(new Map<number,string>());
   const [newTaskRefFilter, setNewTaskRefFilter] = useState<string|undefined>();
 
+  const [deleteModalAction, setDeleteModalAction] = useState<"DELETE_CATYEAR"|"DELETE_CATEGORY"|"DELETE_TASK"|"DELETE_INITIALTASK">("DELETE_CATYEAR");
+  const [deleteModalArgument, setDeleteModalArgument] = useState(0);
+
   const updateCategorizationYear = async () => {
     try {
       const res = await axios.get(`${API_ROOT}/admin/categorization/${categorizationId}`);
@@ -378,7 +381,7 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
                     <button className="btn btn-sm btn-dark mt-1" onClick={(e) => changeState("DRAFT")}>Zamień na szkic</button>
                   </>:<>
                     <button className="btn btn-sm btn-dark me-1" onClick={(e) => changeState("OPEN")}>Otwórz</button>
-                    <button className="btn btn-sm btn-danger me-1" onClick={(e) => deleteCategorizationYear()}>Usuń</button>
+                    <button key="deleteCategorizationButton" className="btn btn-sm btn-danger me-1" onClick={(e) => {setDeleteModalAction("DELETE_CATYEAR"); document.getElementById('openDeleteCallbackModal')?.click()}}>Usuń</button>
                   </>}
                 </>}
               </div>
@@ -559,7 +562,7 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
                           </div>
                         </div>
                         <button className="ms-1 btn btn-dark" onClick={(e) => {let m = new Map(initialTaskModifiedMap); m.set(initialTask.id, false); setInitialTaskModifiedMap(m); modifyInitialTask(initialTask.id);}} disabled={!initialTaskModifiedMap.get(initialTask.id)}>Zapisz zmiany</button>
-                        <button className="ms-1 btn btn-danger" onClick={(e) => deleteInitialTask(initialTask.id)} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state === "FINISHED" && !nuclearmode)}>Usuń</button>
+                        <button className="ms-1 btn btn-danger" onClick={(e) => {setDeleteModalAction("DELETE_INITIALTASK"); setDeleteModalArgument(initialTask.id); document.getElementById('openDeleteCallbackModal')?.click()}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state === "FINISHED" && !nuclearmode)}>Usuń</button>
                       </div>
                     </div>;
                   })}
@@ -610,7 +613,7 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
                     </div>
                   </div>
                   <div className="list-group-item text-center" style={{borderBottomLeftRadius: '0', borderBottomRightRadius: '0', borderBottom: '0'}}>
-                    <button className="btn btn-danger" onClick={(e) => createTaskGroup()}>Utwórz grupę zadań</button>
+                    <button className="btn btn-dark" onClick={(e) => createTaskGroup()}>Utwórz grupę zadań</button>
                   </div>
                 </div>
               </div>
@@ -668,8 +671,8 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
                         <input className="form-control" type="number" min="0" max="1000" value={taskGroup.displayPriority} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, displayPriority: Number.parseInt(e.target.value)}})); let m = new Map(taskGroupModifiedMap); m.set(taskGroup.id, true); setTaskGroupModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR"} />
                       </div>
                       <div className="d-flex flex-column mb-1">
-                        {taskGroupModifiedMap.get(taskGroup.id) && <button className="btn btn-dark" onClick={(e) => modifyTaskGroup(taskGroup.id)}>Zapisz zmiany</button>}
-                        <button className="btn btn-danger" onClick={(e) => deleteTaskGroup(taskGroup.id)} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)}>Usuń kategorię zadań "{taskGroup.name}"</button>
+                        {taskGroupModifiedMap.get(taskGroup.id) && <button className="btn btn-dark ms-auto me-auto" onClick={(e) => modifyTaskGroup(taskGroup.id)}>Zapisz zmiany</button>}
+                        <button className="btn btn-danger ms-auto me-auto" onClick={(e) => {setDeleteModalAction("DELETE_CATEGORY"); setDeleteModalArgument(taskGroup.id); document.getElementById('openDeleteCallbackModal')?.click()}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)}>Usuń kategorię zadań "{taskGroup.name}"</button>
                       </div>
                     </div>
                     {taskGroup.primaryTasks.map((task) => {
@@ -706,7 +709,7 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
                             </div>
                             <input className="form-control" type="number" min="0" value={task.maxPoints} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, maxPoints: (t.id !== task.id) ? t.maxPoints : Number.parseInt(e.target.value)}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)} />
                           </div>}
-                          {(task.type !== "BOOLEAN" && task.type !== "REFONLY") && <div className="input-group mb-1">
+                          {task.type === "LINEAR" && <div className="input-group mb-1">
                             <div className="input-group-prepend">
                               <span className="input-group-text">Mnożnik</span>
                             </div>
@@ -755,8 +758,8 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
                             </div>}
                           </>}
                           <div className="d-flex flex-column mb-1">
-                            {taskModifiedMap.get(task.id) && <button className="btn btn-dark" onClick={(e) => modifyTask(task.id)} disabled={(task.type !== "BOOLEAN" && task.type !== "REFONLY" && (task.multiplier === null || task.multiplier <= 0)) || (task.type !== "REFONLY" && task.maxPoints <= 0)}>Zapisz zmiany</button>}
-                            <button className="btn btn-danger" onClick={(e) => deleteTask(task.id)} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)}>Usuń zadanie</button>
+                            {taskModifiedMap.get(task.id) && <button className="btn btn-dark ms-auto me-auto" onClick={(e) => modifyTask(task.id)} disabled={(task.type !== "BOOLEAN" && task.type !== "REFONLY" && (task.multiplier === null || task.multiplier <= 0)) || (task.type !== "REFONLY" && task.maxPoints <= 0)}>Zapisz zmiany</button>}
+                            <button className="btn btn-danger ms-auto me-auto" onClick={(e) => {setDeleteModalAction("DELETE_TASK"); setDeleteModalArgument(task.id); document.getElementById('openDeleteCallbackModal')?.click()}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode)}>Usuń zadanie</button>
                           </div>
                         </>}
                       </div>
@@ -798,7 +801,7 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
                         </div>
                         <input className="form-control" type="number" min="0" value={newTask.maxPoints} onChange={(e) => {setNewTask({...newTask, maxPoints: Number.parseInt(e.target.value)})}} />
                       </div>}
-                      {(newTask.type !== "BOOLEAN" && newTask.type !== "REFONLY") && <div className="input-group mb-1">
+                      {newTask.type === "LINEAR" && <div className="input-group mb-1">
                         <div className="input-group-prepend">
                           <span className="input-group-text">Mnożnik</span>
                         </div>
@@ -861,7 +864,7 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title" id="exampleModalLabel">CZY NA PEWNO?</h5>
+                <h5 className="modal-title" id="nuclearModalLabel">CZY NA PEWNO?</h5>
                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div className="modal-body">
@@ -909,7 +912,7 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title" id="exampleModalLabel">CZY NA PEWNO?</h5>
+                <h5 className="modal-title" id="deleteRankingModal">CZY NA PEWNO?</h5>
                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div className="modal-body">
@@ -930,6 +933,35 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
           </div>
         </div>
         <button type="button" id="openDeleteRankingModal" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#deleteRankingModal"/>
+
+        <div className="modal fade" id="deleteCallbackModal" tabIndex={-1} aria-hidden="true">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="deleteCallbackModalLabel">CZY NA PEWNO?</h5>
+                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div className="modal-body">
+                <p>Tej operacji nie można cofnąć.</p>
+              </div>
+              <div className="modal-footer">
+              <button type="button" className="btn btn-dark" data-bs-dismiss="modal">Nie</button>
+                <button type="button" className="btn btn-danger" data-bs-dismiss="modal" onClick={(e) => {
+                  if(deleteModalAction === "DELETE_CATYEAR"){
+                    deleteCategorizationYear();
+                  }else if(deleteModalAction === "DELETE_CATEGORY"){
+                    deleteTaskGroup(deleteModalArgument);
+                  }else if(deleteModalAction === "DELETE_INITIALTASK"){
+                    deleteInitialTask(deleteModalArgument);
+                  }else if(deleteModalAction === "DELETE_TASK"){
+                    deleteTask(deleteModalArgument);
+                  }
+                }}>Tak</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="openDeleteCallbackModal" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#deleteCallbackModal"/>
       </>
     );
   };

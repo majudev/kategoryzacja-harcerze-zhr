@@ -116,7 +116,7 @@ const Districts = ({userinfo, users} : {userinfo: UserInfo | null; users: Array<
                 </div>
               </div>
               <div className="list-group-item text-center" style={{borderBottomLeftRadius: '0', borderBottomRightRadius: '0'}}>
-                <button className="btn btn-danger" onClick={(e) => createDistrict()}>Utwórz nową chorągiew</button>
+                <button className="btn btn-dark" onClick={(e) => createDistrict()}>Utwórz nową chorągiew</button>
               </div>
             </div>
           </div>

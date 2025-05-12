@@ -95,8 +95,8 @@ router.patch('/:taskId(\\d+)', async (req: Request, res: Response) => {
   res.status(204).end();
 });
 
-router.delete('/:taskId(\\d+)', async (req: Request, res: Response) => {
-  const taskId = Number.parseInt(req.params.taskId);
+router.delete('/:taskGroupId(\\d+)', async (req: Request, res: Response) => {
+  const taskGroupId = Number.parseInt(req.params.taskGroupId);
 
   // Only ADMIN and TOPLEVEL can do this
   if(req.session.userRole !== "TOPLEVEL_COORDINATOR" && req.session.userRole !== "ADMIN"){
@@ -104,10 +104,43 @@ router.delete('/:taskId(\\d+)', async (req: Request, res: Response) => {
     return;
   }
 
-  await prisma.categorizationTaskGroup.deleteMany({
+  const taskGroup = await prisma.categorizationTaskGroup.findUnique({
     where: {
-      id: taskId,
+      id: taskGroupId,
+    },
+    select: {
+      primaryTasks: {
+        select: {
+          id: true,
+        }
+      },
+      secondaryTasks: {
+        select: {
+          id: true,
+        }
+      }
     }
+  });
+  if(taskGroup === null){
+    res.status(404).json({ message: "no such task group exists" });
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.categorizationTask.deleteMany({
+      where: {
+        OR: [
+          ...taskGroup.primaryTasks.map((task) => {return { id: task.id } }),
+          ...taskGroup.secondaryTasks.map((task) => {return { id: task.id } }),
+        ]
+      }
+    });
+
+    await tx.categorizationTaskGroup.deleteMany({
+      where: {
+        id: taskGroupId,
+      }
+    });
   });
 
   res.status(204).end();

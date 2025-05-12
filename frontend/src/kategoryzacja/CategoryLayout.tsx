@@ -11,7 +11,7 @@ import { UserInfo, Category as CategoryType } from "./Kategoryzacja";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const CategoryLayout = ({category: cat, myTasksMode, toggleMyTask, updateTask, locked} : {category: CategoryType; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void; locked: boolean}) => {
+const CategoryLayout = ({categories, category: cat, myTasksMode, toggleMyTask, updateTask, locked} : {categories: Array<CategoryType>; category: CategoryType; myTasksMode: boolean; toggleMyTask: (taskId: number, state: boolean) => void; updateTask: (taskId: number, value: string) => void; locked: boolean}) => {
   const collectedSplitPoints = cat.tasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.points : t.secondaryGroupId === cat.id ? t.secondaryPoints as number : t.primaryPoints as number), 0);
   const maxSplitPoints = cat.tasks.reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === cat.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
   const maxFilteredSplitPoints = cat.tasks.filter(t => t.favourite).reduce((prev, t) => prev + (t.secondaryGroupId === null ? t.maxPoints : t.secondaryGroupId === cat.id ? t.secondaryMaxPoints as number : t.primaryMaxPoints as number), 0);
@@ -41,8 +41,8 @@ const CategoryLayout = ({category: cat, myTasksMode, toggleMyTask, updateTask, l
                 <input
                   type="text"
                   className="form-control form-control-sm me-3 flex-shrink-0 text-center"
-                  value={task.value}
-                  placeholder="..."
+                  value={task.value === 0 ? "" : task.value}
+                  placeholder="0"
                   style={{ width: '42px' }}
                   onChange={(e) => updateTask(task.id, e.target.value)}
                   disabled={locked}
@@ -53,8 +53,13 @@ const CategoryLayout = ({category: cat, myTasksMode, toggleMyTask, updateTask, l
                   {task.type !== "REFONLY" && task.secondaryGroupId !== null && <><br/>
                     <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Zadanie dzielone: max {task.primaryMaxPoints} pkt do {task.primaryGroupName}, osobne max {task.secondaryMaxPoints} pkt do {task.secondaryGroupName}</small>
                   </>}
-                  {task.description && <><br/><small onClick={(e) => {const newMap = new Map(showTaskMap); newMap.set(task.id, !(showTaskMap.get(task.id) || false)); setShowTaskMap(newMap)}}>{showTaskMap.get(task.id) ? 'Zwiń' : 'Rozwiń'} opis <i className={`bi bi-caret-${showTaskMap.get(task.id) ? 'down' : 'left'}-fill`} /></small></>}
-                  {showTaskMap.get(task.id) && <><br/><small>{task.description}</small></>}
+                  {(task.type !== "BOOLEAN" || task.description) && <><br/><small onClick={(e) => {const newMap = new Map(showTaskMap); newMap.set(task.id, !(showTaskMap.get(task.id) || false)); setShowTaskMap(newMap)}}><i className={`bi bi-caret-${showTaskMap.get(task.id) ? 'down' : 'right'}-fill`} />{showTaskMap.get(task.id) ? 'Zwiń' : 'Rozwiń'} opis</small></>}
+                  {showTaskMap.get(task.id) && <>
+                    {task.type !== "BOOLEAN" && <><br/><small style={{ fontWeight: "bold" }}>Rodzaj zadania: {task.type === "LINEAR" ? 'liniowe' : task.type === "LINEAR_REF" ? 'liniowe z odniesieniem' : task.type === "PARABOLIC_REF" ? 'paraboliczne z odniesieniem' : task.type === "REFONLY" ? 'tylko wartość odniesienia' : 'inne'}</small></>}
+                    {task.type === "LINEAR" && <><br/><small style={{ fontWeight: "bold" }}>Mnożnik: {task.multiplier?.toFixed(1)}x</small></>}
+                    {(task.type === "LINEAR_REF" || task.type === "PARABOLIC_REF") && <><br/><small style={{ fontWeight: "bold" }}>Odniesienie do punktów z zadania: {categories.flatMap(c => c.tasks).filter(t => t.id === task.refValId)[0].name} ({categories.filter(c => c.tasks.filter(t => t.id === task.refValId).length > 0)[0].name})</small></>}
+                    {task.description && <><br/><small>{task.description}</small></>}
+                  </>}
                 </span>
                 <button 
                   className="btn p-0 ms-2 d-inline-flex align-items-center"

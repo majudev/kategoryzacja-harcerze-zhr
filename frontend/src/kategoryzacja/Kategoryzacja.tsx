@@ -36,6 +36,7 @@ export interface Task {
   type: "BOOLEAN" | "LINEAR" | "LINEAR_REF" | "PARABOLIC_REF" | "REFONLY";
   maxPoints: number;
   multiplier: number|null;
+  refValId: number|null;
 
   obligatory: boolean;
 
@@ -225,7 +226,7 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
     };
 
     const updateTask = async (taskId: number, value: string) => {
-      const numValue = (value === 'true' ? 1 : value === 'false' ? 0 : parseFloat(value));
+      const numValue = (value === 'true' ? 1 : value === 'false' ? 0 : value === "" ? 0 : parseFloat(value));
       if (isNaN(numValue) || numValue < 0) return;
 
       const newTasklist = tasklist.map(cat => {
@@ -302,7 +303,7 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
                   <InitialTasksLayout tasks={initialTasklist} toggleInitialTask={toggleInitialTask} locked={locked} />
                   :
                   renderableCategories.filter((cat) => cat.id === activeCategory).map((cat) =>
-                    <CategoryLayout category={cat} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask} locked={locked} />
+                    <CategoryLayout categories={tasklist} category={cat} myTasksMode={showStarredOnly} toggleMyTask={toggleMyTask} updateTask={updateTask} locked={locked} />
                   )
                 }
               </div>

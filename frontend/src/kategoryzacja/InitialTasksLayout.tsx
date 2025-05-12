@@ -26,7 +26,7 @@ const InitialTasksLayout = ({tasks, toggleInitialTask, locked} : {tasks: Array<T
                 />
                 <span className={`flex-grow-1`}>
                   <span className={`${task.value ? 'text-muted text-decoration-line-through' : ''}`}>{task.name}</span>
-                  {task.description && <><br/><small onClick={(e) => {const newMap = new Map(showTaskMap); newMap.set(task.id, !(showTaskMap.get(task.id) || false)); setShowTaskMap(newMap)}}>{showTaskMap.get(task.id) ? 'Zwiń' : 'Rozwiń'} opis <i className={`bi bi-caret-${showTaskMap.get(task.id) ? 'down' : 'left'}-fill`} /></small></>}
+                  {task.description && <><br/><small onClick={(e) => {const newMap = new Map(showTaskMap); newMap.set(task.id, !(showTaskMap.get(task.id) || false)); setShowTaskMap(newMap)}}><i className={`bi bi-caret-${showTaskMap.get(task.id) ? 'down' : 'right'}-fill`} />{showTaskMap.get(task.id) ? 'Zwiń' : 'Rozwiń'} opis</small></>}
                   {showTaskMap.get(task.id) && <><br/><small>{task.description}</small></>}
                 </span>
               </div>
