@@ -24,7 +24,7 @@ const SummaryLayout = ({categories, myTasksMode, toggleMyTask, updateTask, locke
                 <div className="card-header d-flex justify-content-between align-items-center">
                   <h5 className="mb-0">{category.name}</h5>
                   <small>
-                    {filteredTasks.filter((t) => t.value).length}/{filteredTasks.length}
+                    {filteredTasks.filter((t) => t.favourite).length}/{filteredTasks.length}
                   </small>
                 </div>
                 <div className="card-body p-0">
