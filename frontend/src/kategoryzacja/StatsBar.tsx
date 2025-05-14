@@ -34,7 +34,7 @@ const StatsBar = ({activeCategory, categoryInfo} : {activeCategory: Category|nul
           <div className="card shadow-sm border-0 h-100">
             <div className="card-body">
               {/*<h5 className="text-muted mb-3">Następna kategoria</h5>*/}
-              <div className="text-justify">
+              {categoryInfo.category !== "PUSZCZANSKA" && <div className="text-justify">
                 Aby uzyskać kategorię <img className={categoryInfo.nextCategory === 'PUSZCZANSKA' ? "img-src-puszczanska" : categoryInfo.nextCategory === 'LESNA' ? "img-src-lesna" : "img-src-polowa"} style={{ width: '20px', height: '20px' }} />,
                 musisz zdobyć jeszcze:
                 <table>
@@ -53,7 +53,7 @@ const StatsBar = ({activeCategory, categoryInfo} : {activeCategory: Category|nul
                     </td>
                   </tr>}
                 </table>
-              </div>
+              </div>}
             </div>
           </div>
         </div>

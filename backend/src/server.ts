@@ -21,7 +21,7 @@ app.use(
         secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
         resave: false,
         saveUninitialized: false,
-        cookie: { secure: false, httpOnly: true, maxAge: 1000 * 60 * 60 }
+        cookie: { secure: false, httpOnly: true, maxAge: 1000 * 12 * 60 * 60 }
     })
 );
 app.use(authman);

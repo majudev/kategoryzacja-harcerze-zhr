@@ -154,6 +154,8 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
       
           if (status === 409) {
             setNoActiveCategorization(true);
+          } else if (status === 401) {
+            navigate("/login");
           }
         }
       }
@@ -164,6 +166,7 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
         const res = await axios.get(`${API_ROOT}/categorization/category`);
         setCategoryInfo(res.data);
       } catch (err: any) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) navigate("/login");
       }
     };
 
@@ -177,6 +180,8 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
         }
       } catch (err: any) {
         setInitialTasklist([]);
+        
+        if (axios.isAxiosError(err) && err.response?.status === 401) navigate("/login");
       }
     };
 
@@ -187,6 +192,8 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
         setTasklist(res.data);
       } catch (err: any) {
         setTasklist([]);
+
+        if (axios.isAxiosError(err) && err.response?.status === 401) navigate("/login");
       }
     };
   
@@ -292,6 +299,7 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
       }
 
       updateTasklist();
+      updateCategoryInfo();
     };
     
 
