@@ -6,6 +6,7 @@ import NavbarOverlay from "../common/NavbarOverlay";
 import 'bootstrap/js/dist/tab';
 import 'bootstrap/js/dist/modal';
 import { UserInfo } from "../App";
+import { floatToString } from "../common/textformatter";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -750,11 +751,11 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
                             </div>
                             {task.secondaryGroup !== null && <div className="input-group mb-1 align-items-center">
                               <span className="input-group-text">Podział punktów</span>
-                              <span className="input-group-text">Kategoria {task.primaryGroup.name}: {(task.maxPoints * task.split).toFixed(1)} pkt</span>
+                              <span className="input-group-text">Kategoria {task.primaryGroup.name}: {floatToString(task.maxPoints * task.split)} pkt</span>
 
                               <input className="form-range flex-fill mx-2 w-auto" type="range" min="0" max="1" step={0.5 / task.maxPoints} value={task.split} onChange={(e) => {setTaskGroups(taskGroups.map((tg) => {return {...tg, primaryTasks: tg.primaryTasks.map((t) => {return {...t, split: (t.id !== task.id) ? t.split : Number.parseFloat(e.target.value)}})}})); let m = new Map(taskModifiedMap); m.set(task.id, true); setTaskModifiedMap(m);}} disabled={userinfo?.role === "DISTRICT_COORDINATOR" || (categorizationYear.state !== "DRAFT" && !nuclearmode) || task.maxPoints <= 0} />
 
-                              <span className="input-group-text">Kategoria {task.secondaryGroup.name}: {(task.maxPoints * (1-task.split)).toFixed(1)} pkt</span>
+                              <span className="input-group-text">Kategoria {task.secondaryGroup.name}: {floatToString(task.maxPoints * (1-task.split))} pkt</span>
                             </div>}
                           </>}
                           <div className="d-flex flex-column mb-1">
@@ -842,11 +843,11 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
                         </div>
                         {newTask.secondaryGroup !== null && <div className="input-group mb-1 align-items-center">
                           <span className="input-group-text">Podział punktów</span>
-                          <span className="input-group-text">Kategoria {newTask.primaryGroup.name}: {(newTask.maxPoints * newTask.split).toFixed(1)} pkt</span>
+                          <span className="input-group-text">Kategoria {newTask.primaryGroup.name}: {floatToString(newTask.maxPoints * newTask.split)} pkt</span>
 
                           <input className="form-range flex-fill mx-2 w-auto" type="range" min="0" max="1" step={0.5 / newTask.maxPoints} value={newTask.split} onChange={(e) => {setNewTask({...newTask, split: Number.parseFloat(e.target.value)})}} disabled={newTask.maxPoints <= 0} />
 
-                          <span className="input-group-text">Kategoria {newTask.secondaryGroup.name}: {(newTask.maxPoints * (1-newTask.split)).toFixed(1)} pkt</span>
+                          <span className="input-group-text">Kategoria {newTask.secondaryGroup.name}: {floatToString(newTask.maxPoints * (1-newTask.split))} pkt</span>
                         </div>}
                       </>}
                       <div className="d-flex flex-column mb-1">

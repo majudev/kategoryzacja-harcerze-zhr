@@ -66,6 +66,21 @@ export interface Category {
   tasks: Task[];
 }
 
+export interface CategoryInfo {
+  category: string;
+  nextCategory: string;
+  tokens: {
+      polowa: number;
+      lesna: number;
+      puszczanska: number;
+  };
+  missingTokens: {
+      lesna: number;
+      puszczanska: number;
+  };
+  points: number;
+}
+
 export interface UserInfo {
   role: "USER"|"DISTRICT_COORDINATOR"|"TOPLEVEL_COORDINATOR"|"ADMIN";
   districtAdmin: {id: number; name: string;} | null;
@@ -104,12 +119,27 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
     const [categorizationDetails, setCategorizationDetails] = useState<CategorizationDetails>();
     const [initialTasklist, setInitialTasklist] = useState<Array<Task>>([]);
     const [tasklist, setTasklist] = useState<Array<Category>>([]);
+    const [categoryInfo, setCategoryInfo] = useState<CategoryInfo>({
+      category: 'POLOWA' as ('POLOWA' | 'LESNA' | 'PUSZCZANSKA'),
+      nextCategory: 'POLOWA' as ('POLOWA' | 'LESNA' | 'PUSZCZANSKA'),
+      tokens: {
+        polowa: 0,
+        lesna: 0,
+        puszczanska: 0,
+      },
+      missingTokens: {
+        lesna: 0,
+        puszczanska: 0,
+      },
+      points: 0,
+    });
 
     const [noActiveCategorization, setNoActiveCategorization] = useState(false);
 
     const locked = userinfo !== null && userinfo.team !== null && userinfo.team.locked;
 
     const updateCategorizationDetails = async () => {
+      updateCategoryInfo();
       try {
         const res = await axios.get(`${API_ROOT}/categorization`);
         setCategorizationDetails(res.data);
@@ -127,6 +157,14 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
       }
     };
 
+    const updateCategoryInfo = async () => {
+      try {
+        const res = await axios.get(`${API_ROOT}/categorization/category`);
+        setCategoryInfo(res.data);
+      } catch (err: any) {
+      }
+    };
+
     const updateInitialTasklist = async () => {
       try {
         const res = await axios.get(`${API_ROOT}/tasks/initial`);
@@ -141,6 +179,7 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
     };
 
     const updateTasklist = async () => {
+      updateCategoryInfo();
       try {
         const res = await axios.get(`${API_ROOT}/tasks/`);
         setTasklist(res.data);
@@ -281,7 +320,7 @@ const Kategoryzacja = ({userinfo} : {userinfo: UserInfo | null}) => {
 
               {/* Top Stats Cards */}
               {!(initialTasklist.reduce((prev, x) => (x.value ? prev+1 : prev), 0) < initialTasklist.length) && 
-                <StatsBar categorizationDetails={categorizationDetails} categories={tasklist} myTasksMode={showStarredOnly} locked={locked} />
+                <StatsBar activeCategory={renderableCategories.filter((cat) => cat.id === activeCategory)[0]} categoryInfo={categoryInfo} />
               }
 
               {/* Locked categorization info */}

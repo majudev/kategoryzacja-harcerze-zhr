@@ -8,6 +8,7 @@ import Sidebar from "./Sidebar";
 import StatsBar from "./StatsBar";
 import Summary from "./SummaryLayout";
 import { UserInfo, Category as CategoryType } from "./Kategoryzacja";
+import { floatToString } from "../common/textformatter";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -49,14 +50,14 @@ const CategoryLayout = ({categories, category: cat, myTasksMode, toggleMyTask, u
                 />
                 }
                 <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                  {task.name} - {task.type === "REFONLY" ? <b>niepunktowane</b> : <b>{task.secondaryGroupId === null ? task.points.toFixed(1) : task.secondaryGroupId === cat.id ? task.secondaryPoints?.toFixed(1) : task.primaryPoints?.toFixed(1)}/{task.secondaryGroupId === null ? task.maxPoints.toFixed(1) : task.secondaryGroupId === cat.id ? task.secondaryMaxPoints?.toFixed(1) : task.primaryMaxPoints?.toFixed(1)} pkt</b>}
+                  {task.name} - {task.type === "REFONLY" ? <b>niepunktowane</b> : <b>{task.secondaryGroupId === null ? floatToString(task.points) : task.secondaryGroupId === cat.id ? floatToString(task.secondaryPoints) : floatToString(task.primaryPoints)}/{task.secondaryGroupId === null ? floatToString(task.maxPoints) : task.secondaryGroupId === cat.id ? floatToString(task.secondaryMaxPoints) : floatToString(task.primaryMaxPoints)} pkt</b>}
                   {task.type !== "REFONLY" && task.secondaryGroupId !== null && <><br/>
                     <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Zadanie dzielone: max {task.primaryMaxPoints} pkt do {task.primaryGroupName}, osobne max {task.secondaryMaxPoints} pkt do {task.secondaryGroupName}</small>
                   </>}
                   {(task.type !== "BOOLEAN" || task.description) && <><br/><small onClick={(e) => {const newMap = new Map(showTaskMap); newMap.set(task.id, !(showTaskMap.get(task.id) || false)); setShowTaskMap(newMap)}}><i className={`bi bi-caret-${showTaskMap.get(task.id) ? 'down' : 'right'}-fill`} />{showTaskMap.get(task.id) ? 'Zwiń' : 'Rozwiń'} opis</small></>}
                   {showTaskMap.get(task.id) && <>
                     {task.type !== "BOOLEAN" && <><br/><small style={{ fontWeight: "bold" }}>Rodzaj zadania: {task.type === "LINEAR" ? 'liniowe' : task.type === "LINEAR_REF" ? 'liniowe z odniesieniem' : task.type === "PARABOLIC_REF" ? 'paraboliczne z odniesieniem' : task.type === "REFONLY" ? 'tylko wartość odniesienia' : 'inne'}</small></>}
-                    {task.type === "LINEAR" && <><br/><small style={{ fontWeight: "bold" }}>Mnożnik: {task.multiplier?.toFixed(1)}x</small></>}
+                    {task.type === "LINEAR" && <><br/><small style={{ fontWeight: "bold" }}>Mnożnik: {floatToString(task.multiplier)}x</small></>}
                     {(task.type === "LINEAR_REF" || task.type === "PARABOLIC_REF") && <><br/><small style={{ fontWeight: "bold" }}>Odniesienie do punktów z zadania: {categories.flatMap(c => c.tasks).filter(t => t.id === task.refValId)[0].name} ({categories.filter(c => c.tasks.filter(t => t.id === task.refValId).length > 0)[0].name})</small></>}
                     {task.description && <><br/><small>{task.description}</small></>}
                   </>}

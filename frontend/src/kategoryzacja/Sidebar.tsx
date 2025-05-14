@@ -5,6 +5,7 @@ import translate from "../translator";
 import NavbarOverlay from "../common/NavbarOverlay";
 import 'bootstrap/js/dist/tab';
 import { UserInfo, Category, Task } from "./Kategoryzacja";
+import { floatToString } from "../common/textformatter";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -65,9 +66,9 @@ const Sidebar = ({type, renderableCategories, initialLock, myTasksMode, setMyTas
                     <>{cat.tasks.filter(t => t.value).length}/{cat.tasks.length}</>
                     :
                     myTasksMode ?
-                    <>{collectedSplitPoints.toFixed(1)}/{maxFilteredSplitPoints.toFixed(1)}</>
+                    <>{floatToString(collectedSplitPoints)}/{floatToString(maxFilteredSplitPoints)}</>
                     :
-                    <>{collectedSplitPoints.toFixed(1)}</>
+                    <>{floatToString(collectedSplitPoints)}</>
                     }
                   </span>
                   :
@@ -78,7 +79,7 @@ const Sidebar = ({type, renderableCategories, initialLock, myTasksMode, setMyTas
                   </div>
                 }
               </div>
-              {cat.id !== 0 && (myTasksMode || cat.id === -1) && <div className="progress mt-2" style={{height: '3px', position: 'relative', overflow: "visible"}}>
+              {/*cat.id !== 0 && (myTasksMode || cat.id === -1)*/ cat.id === -1 && <div className="progress mt-2" style={{height: '3px', position: 'relative', overflow: "visible"}}>
                 {cat.id === -1 ?
                 <div 
                   className="progress-bar bg-success" 

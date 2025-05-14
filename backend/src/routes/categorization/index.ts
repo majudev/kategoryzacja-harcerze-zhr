@@ -155,7 +155,10 @@ router.get('/category', async (req: Request, res: Response) => {
 
   const result = await getCategory(polowa, lesna, puszczanska, categorizationYear.lesnaLesneThreshold, categorizationYear.lesnaPuszczanskieThreshold, categorizationYear.puszczanskaLesnaThreshold, categorizationYear.puszczanskaPuszczanskieThreshold);
 
-  res.status(200).json(result);
+  res.status(200).json({
+    ...result,
+    points: tasks.reduce((prev, val) => prev + val.collectedSplitPoints, 0),
+  });
 });
 
 export default router;

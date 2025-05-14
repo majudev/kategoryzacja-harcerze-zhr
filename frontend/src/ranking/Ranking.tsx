@@ -118,7 +118,7 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
                             <td>{index + 1}</td>
                             <td>{entry.name}</td>
                             <td className="text-center" style={{whiteSpace: "nowrap"}}>
-                              {entry.points}
+                              {entry.points.toFixed(0)}
                             </td>
                             <td className="pb-0 pt-1 text-center">
                               <img className={"img-src-" + entry.category.toLowerCase()} style={{width: '35px', height: '35px'}}></img>

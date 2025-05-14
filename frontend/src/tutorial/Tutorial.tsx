@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import translate from "../translator";
 import NavbarOverlay from "../common/NavbarOverlay";
+import { floatToString } from "../common/textformatter";
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -656,7 +657,7 @@ const Tutorial = ({userinfo} : {userinfo: {role: "USER"|"DISTRICT_COORDINATOR"|"
                         onChange={(e) => {if(e.target.value === ""){setExampleLinearRefTaskValue(0); return;} const newVal = Number.parseInt(e.target.value); if(!isNaN(newVal)) setExampleLinearRefTaskValue(newVal)}}
                       />
                       <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                        Przykładowe zadanie liniowe z odniesieniem - <b>{Math.min((exampleLinearRefReferenceValue === 0) ? 0 : 10 * exampleLinearRefTaskValue / exampleLinearRefReferenceValue, 10).toFixed(1)}/10 pkt</b>
+                        Przykładowe zadanie liniowe z odniesieniem - <b>{floatToString(Math.min((exampleLinearRefReferenceValue === 0) ? 0 : 10 * exampleLinearRefTaskValue / exampleLinearRefReferenceValue, 10))}/10 pkt</b>
                       </span>
                       <button 
                         className="btn p-0 ms-2 d-inline-flex align-items-center"
@@ -665,7 +666,7 @@ const Tutorial = ({userinfo} : {userinfo: {role: "USER"|"DISTRICT_COORDINATOR"|"
                       </button>
                     </div>
                   </div>
-                  <i>Zadanie liniowe z odniesieniem odnosi się do zadania liniowego powyżej. {exampleLinearRefReferenceValue === 0 ? <>Zadanie stanowiące wartość odniesienia ma wartość 0, więc nie można wyliczyć punktów za to zadanie - przyznano <b>0 punktów</b>.</> : <>Punkty za zadanie według wzoru to <b>10*{exampleLinearRefTaskValue}/{exampleLinearRefReferenceValue}={(10*exampleLinearRefTaskValue/exampleLinearRefReferenceValue).toFixed(1)}</b>{(10*exampleLinearRefTaskValue/exampleLinearRefReferenceValue <= 10) ? '.' : <>, ale można zdobyć maksymalnie 10 punktów, więc przyznano <b>10 punktów</b>.</>}</>}</i>
+                  <i>Zadanie liniowe z odniesieniem odnosi się do zadania liniowego powyżej. {exampleLinearRefReferenceValue === 0 ? <>Zadanie stanowiące wartość odniesienia ma wartość 0, więc nie można wyliczyć punktów za to zadanie - przyznano <b>0 punktów</b>.</> : <>Punkty za zadanie według wzoru to <b>10*{exampleLinearRefTaskValue}/{exampleLinearRefReferenceValue}={floatToString(10*exampleLinearRefTaskValue/exampleLinearRefReferenceValue)}</b>{(10*exampleLinearRefTaskValue/exampleLinearRefReferenceValue <= 10) ? '.' : <>, ale można zdobyć maksymalnie 10 punktów, więc przyznano <b>10 punktów</b>.</>}</>}</i>
                 </p>
 
                 <h5>Przykład zadania parabolicznego z odniesieniem</h5>
@@ -699,7 +700,7 @@ const Tutorial = ({userinfo} : {userinfo: {role: "USER"|"DISTRICT_COORDINATOR"|"
                         onChange={(e) => {if(e.target.value === ""){setExampleParabolicRefTaskValue(0); return;} const newVal = Number.parseInt(e.target.value); if(!isNaN(newVal)) setExampleParabolicRefTaskValue(newVal)}}
                       />
                       <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                        Przykładowe zadanie liniowe z odniesieniem - <b>{Math.min((exampleParabolicRefReferenceValue === 0) ? 0 : 10 * Math.pow(exampleParabolicRefTaskValue / exampleParabolicRefReferenceValue, 2), 10).toFixed(1)}/10 pkt</b>
+                        Przykładowe zadanie liniowe z odniesieniem - <b>{floatToString(Math.min((exampleParabolicRefReferenceValue === 0) ? 0 : 10 * Math.pow(exampleParabolicRefTaskValue / exampleParabolicRefReferenceValue, 2), 10))}/10 pkt</b>
                       </span>
                       <button 
                         className="btn p-0 ms-2 d-inline-flex align-items-center"
@@ -708,7 +709,7 @@ const Tutorial = ({userinfo} : {userinfo: {role: "USER"|"DISTRICT_COORDINATOR"|"
                       </button>
                     </div>
                   </div>
-                  <i>Zadanie paraboliczne z odniesieniem odnosi się do zadania liniowego powyżej. {exampleParabolicRefReferenceValue === 0 ? <>Zadanie stanowiące wartość odniesienia ma wartość 0, więc nie można wyliczyć punktów za to zadanie - przyznano <b>0 punktów</b>.</> : <>Punkty za zadanie według wzoru to <b>10*({exampleParabolicRefTaskValue}/{exampleParabolicRefReferenceValue})^2={(10*Math.pow(exampleParabolicRefTaskValue/exampleParabolicRefReferenceValue, 2)).toFixed(1)}</b>{(10*Math.pow(exampleParabolicRefTaskValue/exampleParabolicRefReferenceValue, 2) <= 10) ? '.' : <>, ale można zdobyć maksymalnie 10 punktów, więc przyznano <b>10 punktów</b>.</>}</>}</i>
+                  <i>Zadanie paraboliczne z odniesieniem odnosi się do zadania liniowego powyżej. {exampleParabolicRefReferenceValue === 0 ? <>Zadanie stanowiące wartość odniesienia ma wartość 0, więc nie można wyliczyć punktów za to zadanie - przyznano <b>0 punktów</b>.</> : <>Punkty za zadanie według wzoru to <b>10*({exampleParabolicRefTaskValue}/{exampleParabolicRefReferenceValue})^2={floatToString(10*Math.pow(exampleParabolicRefTaskValue/exampleParabolicRefReferenceValue, 2))}</b>{(10*Math.pow(exampleParabolicRefTaskValue/exampleParabolicRefReferenceValue, 2) <= 10) ? '.' : <>, ale można zdobyć maksymalnie 10 punktów, więc przyznano <b>10 punktów</b>.</>}</>}</i>
                 </p>
 
                 <h5>Przykład zadania tylko z wartością odniesienia</h5>
@@ -742,7 +743,7 @@ const Tutorial = ({userinfo} : {userinfo: {role: "USER"|"DISTRICT_COORDINATOR"|"
                         onChange={(e) => {if(e.target.value === ""){setExampleREFONLYLinearTaskValue(0); return;} const newVal = Number.parseInt(e.target.value); if(!isNaN(newVal)) setExampleREFONLYLinearTaskValue(newVal)}}
                       />
                       <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                        Zadanie liniowe z odniesieniem - <b>{Math.min((exampleREFONLYReferenceValue === 0) ? 0 : 10 * exampleREFONLYLinearTaskValue / exampleREFONLYReferenceValue, 10).toFixed(1)}/10 pkt</b>
+                        Zadanie liniowe z odniesieniem - <b>{floatToString(Math.min((exampleREFONLYReferenceValue === 0) ? 0 : 10 * exampleREFONLYLinearTaskValue / exampleREFONLYReferenceValue, 10))}/10 pkt</b>
                       </span>
                       <button 
                         className="btn p-0 ms-2 d-inline-flex align-items-center"
@@ -760,7 +761,7 @@ const Tutorial = ({userinfo} : {userinfo: {role: "USER"|"DISTRICT_COORDINATOR"|"
                         onChange={(e) => {if(e.target.value === ""){setExampleREFONLYParabolicTaskValue(0); return;} const newVal = Number.parseInt(e.target.value); if(!isNaN(newVal)) setExampleREFONLYParabolicTaskValue(newVal)}}
                       />
                       <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
-                        Zadanie paraboliczne z odniesieniem - <b>{Math.min((exampleREFONLYReferenceValue === 0) ? 0 : 10 * Math.pow(exampleREFONLYParabolicTaskValue / exampleREFONLYReferenceValue, 2), 10).toFixed(1)}/10 pkt</b>
+                        Zadanie paraboliczne z odniesieniem - <b>{floatToString(Math.min((exampleREFONLYReferenceValue === 0) ? 0 : 10 * Math.pow(exampleREFONLYParabolicTaskValue / exampleREFONLYReferenceValue, 2), 10))}/10 pkt</b>
                       </span>
                       <button 
                         className="btn p-0 ms-2 d-inline-flex align-items-center"
