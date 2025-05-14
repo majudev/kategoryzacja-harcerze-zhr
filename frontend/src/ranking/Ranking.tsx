@@ -128,6 +128,7 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
                       })}
                     </tbody>
                   </table>
+                  <p className="text-center mb-2"><i>Ranking jest aktualizowany raz na dobę.</i></p>
                 </li>
               </ul>
             </div>

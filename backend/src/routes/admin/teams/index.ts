@@ -5,6 +5,40 @@ import { PrismaClient } from "@prisma/client";
 const router = Router();
 const prisma = new PrismaClient();
 
+router.get('/:teamId(\\d+)?', async (req: Request, res: Response) => {
+  const teamId = Number.parseInt(req.params.teamId);
+  if(Number.isNaN(teamId)){
+    res.status(400).json({ status: "error", message: "invalid team id" });
+    return;
+  }
+
+  const team = await prisma.team.findUnique({
+    where: {
+      id: teamId,
+    },
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      district: {
+          select: {
+              id: true,
+              name: true,
+          }
+      },
+      shadow: true,
+      locked: true,
+    }
+  });
+
+  if(team === null){
+    res.status(404).json({ status: "error", message: "team not found" });
+    return;
+  }
+
+  res.status(200).json(team).end();
+});
+
 router.post('/', async (req: Request, res: Response) => {
   let { name, shadow, districtId } = req.body;
 

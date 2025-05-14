@@ -439,7 +439,7 @@ const CategorizationLayout = ({userinfo, categorizationId, reloadCategorizations
 
                           <img className={`ms-3 me-3 img-src-${entry.category.toLowerCase()}`} style={{ width: '20px', height: '20px' }} />
 
-                          <Link className="btn btn-sm btn-dark ms-1" to={"/admin/kategoryzacja/" + entry.id}>Zobacz arkusz</Link>
+                          <Link className="btn btn-sm btn-dark ms-1" to={"/admin/kategoryzacja/" + entry.id + "/w-roku/" + categorizationId}>Zobacz arkusz</Link>
                         </div>
                       })}
                     </>

@@ -15,6 +15,7 @@ import Admin from './admin/Admin';
 import PasswordResetRequest from './login/PasswordResetRequest';
 import PasswordReset from './login/PasswordReset';
 import Tutorial from './tutorial/Tutorial';
+import KategoryzacjaAdmin from './admin/KategoryzacjaAdmin';
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
@@ -83,7 +84,7 @@ function App(): ReactElement {
           <Route path="/zasady" element={<Tutorial userinfo={userinfo} />} />
 
           <Route path="/admin" element={<Admin userinfo={userinfo}/>} />
-          <Route path="/kategoryzacja/:teamId" element={<Admin userinfo={userinfo}/>} />
+          <Route path="/admin/kategoryzacja/:teamId/w-roku/:categorizationYearId" element={<KategoryzacjaAdmin userinfo={userinfo}/>} />
         </Routes>
       </div>
     </Router>

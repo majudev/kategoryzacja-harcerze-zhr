@@ -56,8 +56,10 @@ export const getInitialTasks = async (teamId: number, categorizationYearId: numb
   return tasks;
 };
 
-router.get('/', async (req: Request, res: Response) => {
-    const categorizationYearId = await getCategorizationYearId();
+router.get('/:categorizationYearId(\\d+)?/:maybeOf(of)?/:teamId(\\d+)?', async (req: Request, res: Response) => {
+    let categorizationYearId = Number.parseInt(req.params.categorizationYearId) as (number|null);
+    if(Number.isNaN(categorizationYearId)) categorizationYearId = await getCategorizationYearId();
+    
     if(categorizationYearId === null){
       res.status(409).json({ message: "no active categorization" }).end();
       return;
@@ -70,21 +72,43 @@ router.get('/', async (req: Request, res: Response) => {
       select: {
           teamId: true,
           teamAccepted: true,
+
+          role: true,
       }
     });
     if(!user){ // should never happen
         res.status(500).end();
         return;
     }
-    if(user.teamId === null){
-      res.status(404).json({ message: "you have not yet registered your team" });
-      return;
-    }
-    if(!user.teamAccepted){
+    let teamId = -1;
+    if(req.params.teamId) {
+      // If teamId provided - check that user has permissions to do that
+
+      if(!categorizationYearId || req.params.maybeOf !== 'of'){
+        res.status(400).send('Must include year before /of/:teamId');
+        return;
+      }
+
+      if(user.role === "USER"){
         res.status(403).json({ message: "you don't have permission to view this team" });
         return;
+      }
+
+      teamId = Number.parseInt(req.params.teamId);
+    }else{
+      // If no teamId provided - check if user has been approved access
+
+      if(user.teamId === null){
+        res.status(404).json({ message: "you have not yet registered your team" });
+        return;
+      }
+      if(!user.teamAccepted){
+          res.status(403).json({ message: "you don't have permission to view this team" });
+          return;
+      }
+
+      teamId = user.teamId;
     }
-    const teamId = user.teamId;
 
     const tasks = await getInitialTasks(teamId, categorizationYearId);
     //console.log(tasks);

@@ -1,11 +1,11 @@
 services:
   frontend:
-    build: frontend
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-frontend:v1.0
     restart: always
     environment:
       REACT_APP_API_URL: http://localhost:8080/api
   backend-w1:
-    build: backend
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.0
     restart: always
     environment:
       OAUTH_GOOGLE_ID:
@@ -17,7 +17,7 @@ services:
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
       BCRYPT_ROUNDS: 11
   backend-w2:
-    build: backend
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.0
     restart: always
     environment:
       OAUTH_GOOGLE_ID:
@@ -29,7 +29,7 @@ services:
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
       BCRYPT_ROUNDS: 11
   backend-w3:
-    build: backend
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.0
     restart: always
     environment:
       OAUTH_GOOGLE_ID:
@@ -41,7 +41,7 @@ services:
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
       BCRYPT_ROUNDS: 11
   backend-w4:
-    build: backend
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.0
     restart: always
     environment:
       OAUTH_GOOGLE_ID:
@@ -71,5 +71,5 @@ services:
       --save ""
       --appendonly no
   nginx:
-    build: nginx
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-nginx:v1.0
     restart: always

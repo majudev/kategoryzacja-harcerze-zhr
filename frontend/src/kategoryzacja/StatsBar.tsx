@@ -8,8 +8,8 @@ import { CategorizationDetails, Category, CategoryInfo, UserInfo } from "./Kateg
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
-const StatsBar = ({activeCategory, categoryInfo} : {activeCategory: Category; categoryInfo: CategoryInfo}) => {
-    const groupToken = activeCategory.collectedSplitPoints >= activeCategory.puszczanskaThreshold ? 'PUSZCZANSKA' : activeCategory.collectedSplitPoints >= activeCategory.lesnaThreshold ? 'LESNA' : 'POLOWA';
+const StatsBar = ({activeCategory, categoryInfo} : {activeCategory: Category|null; categoryInfo: CategoryInfo}) => {
+    const groupToken = activeCategory === null ? 'POLOWA' : activeCategory.collectedSplitPoints >= activeCategory.puszczanskaThreshold ? 'PUSZCZANSKA' : activeCategory.collectedSplitPoints >= activeCategory.lesnaThreshold ? 'LESNA' : 'POLOWA';
 
     return (
       <div className="row g-4 mb-4">
@@ -17,9 +17,15 @@ const StatsBar = ({activeCategory, categoryInfo} : {activeCategory: Category; ca
           <div className="card shadow-sm border-0 h-100">
             <div className="card-body">
               <h5 className="text-muted mb-3">Symbol w obszarze</h5>
-              <div className={"display-4 " + (groupToken === 'PUSZCZANSKA' ? "category-img-puszczanska" : groupToken === 'LESNA' ? "category-img-lesna" : "category-img-polowa")} style={{color: "rgba(0, 0, 0, 0)"}}>
-                c
-              </div>
+              {activeCategory === null ?
+                <div className="display-4">
+                  N/D
+                </div>
+              :
+                <div className={"display-4 " + (groupToken === 'PUSZCZANSKA' ? "category-img-puszczanska" : groupToken === 'LESNA' ? "category-img-lesna" : "category-img-polowa")} style={{color: "rgba(0, 0, 0, 0)"}}>
+                  c
+                </div>
+              }
             </div>
           </div>
         </div>
