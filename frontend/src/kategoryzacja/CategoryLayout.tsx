@@ -52,7 +52,7 @@ const CategoryLayout = ({categories, category: cat, myTasksMode, toggleMyTask, u
                 <span className="flex-grow-1" style={{lineHeight: "1.3"}}>
                   {task.name} - {task.type === "REFONLY" ? <b>niepunktowane</b> : <b>{task.secondaryGroupId === null ? floatToString(task.points) : task.secondaryGroupId === cat.id ? floatToString(task.secondaryPoints) : floatToString(task.primaryPoints)}/{task.secondaryGroupId === null ? floatToString(task.maxPoints) : task.secondaryGroupId === cat.id ? floatToString(task.secondaryMaxPoints) : floatToString(task.primaryMaxPoints)} pkt</b>}
                   {task.type !== "REFONLY" && task.secondaryGroupId !== null && <><br/>
-                    <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Zadanie dzielone: max {task.primaryMaxPoints} pkt do {task.primaryGroupName}, osobne max {task.secondaryMaxPoints} pkt do {task.secondaryGroupName}</small>
+                    <small style={{ fontSize: "0.7em", fontWeight: "bold" }}>Zadanie dzielone: max {floatToString(task.primaryMaxPoints)} pkt do {task.primaryGroupName}, osobne max {floatToString(task.secondaryMaxPoints)} pkt do {task.secondaryGroupName}</small>
                   </>}
                   {(task.type !== "BOOLEAN" || task.description) && <><br/><small onClick={(e) => {const newMap = new Map(showTaskMap); newMap.set(task.id, !(showTaskMap.get(task.id) || false)); setShowTaskMap(newMap)}}><i className={`bi bi-caret-${showTaskMap.get(task.id) ? 'down' : 'right'}-fill`} />{showTaskMap.get(task.id) ? 'Zwiń' : 'Rozwiń'} opis</small></>}
                   {showTaskMap.get(task.id) && <>

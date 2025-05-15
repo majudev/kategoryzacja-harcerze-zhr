@@ -171,6 +171,69 @@ const KategoryzacjaAdmin = ({userinfo} : {userinfo: UserInfo | null}) => {
     const updateTask = async (taskId: number, value: string) => {
       /// DUMMY CALLBACK - no toggling tasks in admin mode
     };
+
+    const downloadCsv = (initialTasks: Task[], categories: Category[]) => {
+      // 1) Build header row
+      const header = [
+        'Kategoria',
+        'Nazwa zadania',
+        'Wpisana wartość',
+        'Przyznane punkty',
+        'Oznaczone gwiazdką'
+      ];
+    
+      // 2) Helper to escape any cell for CSV
+      const escapeCell = (cell: string) =>
+        `"${cell.replace(/"/g, '""')}"`;
+    
+      // 3) Build data rows
+      const rows: string[][] = [];
+    
+      // 3a) InitialTasks – always labelled "Wymaganie podstawowe"
+      initialTasks.forEach(task => {
+        rows.push([
+          'Wymaganie podstawowe',              // Kategoria
+          task.name,                           // Nazwa zadania
+          task.value ? 'Tak' : 'Nie',         // Wpisana wartość (boolean)
+          '',                                  // Przyznane punkty (empty)
+          ''                                   // Oznaczone gwiazdką (empty)
+        ]);
+      });
+    
+      // 3b) Then each Category and its tasks
+      categories.forEach(cat => {
+        cat.tasks.forEach(task => {
+          rows.push([
+            cat.name,                          // Kategoria
+            task.name,                         // Nazwa zadania
+            String(task.value),               // Wpisana wartość (number)
+            String(task.points),              // Przyznane punkty
+            task.favourite ? 'Tak' : 'Nie'    // Oznaczone gwiazdką
+          ]);
+        });
+      });
+    
+      // 4) Serialize all rows to a single CSV string
+      const csvContent =
+        [
+          header.map(escapeCell).join(','),             // header line
+          ...rows.map(r => r.map(escapeCell).join(',')) // each data line
+        ].join('\r\n');
+    
+      // 5) Create a Blob and trigger a download
+      const blob = new Blob([csvContent], {
+        type: 'text/csv;charset=utf-8;'
+      });
+      const url = URL.createObjectURL(blob);
+    
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${categorizationDetails?.name} - jednostka ${teaminfo?.name}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    };
     
 
     return (
@@ -203,7 +266,7 @@ const KategoryzacjaAdmin = ({userinfo} : {userinfo: UserInfo | null}) => {
                 <div className="col-12">
                   <div className="card shadow-sm border-0 h-100">
                     <div className="card-body">
-                      <h3 className="text-center">Arkusz jednostki {teaminfo?.name}</h3>
+                      <h3 className="text-center">Arkusz jednostki {teaminfo?.name} <button className="btn btn-dark btn-sm" onClick={() => downloadCsv(initialTasklist, tasklist)}>Pobierz CSV</button></h3>
                       <p className="text-center mb-0">{teaminfo?.district.name}</p>
                       <p className="text-center fst-italic mb-0">Arkusz wyświetlany w trybie tylko do odczytu!</p>
                     </div>
