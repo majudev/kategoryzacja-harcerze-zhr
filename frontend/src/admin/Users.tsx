@@ -100,9 +100,13 @@ const Users = ({userinfo} : {userinfo: UserInfo | null; }) => {
                   <td>
                     <select className="form-control" value={districtfilter} onChange={(e) => setDistrictfilter(e.target.value)}>
                       <option value="">Wszystkie</option>
-                      {users.map(u => {
-                        if(u.team === null) return;
-                        return <option value={u.team.district.name}>{u.team.district.name}</option>;
+                      {Array.from(new Set(users.filter(
+                        u => u.team !== null
+                      ).map(u => {
+                        if(u.team === null) return "";
+                        return u.team.district.name;
+                      }))).map(name => {
+                        return <option value={name}>{name}</option>;
                       })}
                     </select>
                   </td>
@@ -120,7 +124,7 @@ const Users = ({userinfo} : {userinfo: UserInfo | null; }) => {
                       <option value="ALL">Wszyscy</option>
                       <option value="ADMIN">Administratorzy</option>
                       <option value="TOPLEVEL_COORDINATOR">Koord. kraj.</option>
-                      <option value="TOPLEVEL_DISTRICT">Koord. chor.</option>
+                      <option value="DISTRICT_COORDINATOR">Koord. chor.</option>
                       <option value="USER">Użytkownicy</option>
                     </select>
                   </td>

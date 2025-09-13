@@ -4,6 +4,8 @@ import { rebuildRanking } from "./rankingbuilder";
 const prisma = new PrismaClient();
 
 const main = async () => {
+    console.log("Current time: " + (new Date().toLocaleString()));
+
     const years = await prisma.categorizationYear.findMany({
         where: {
             ranking: null,
@@ -23,5 +25,6 @@ const main = async () => {
     }));
 
     process.exit();
+    console.log();
 };
 main();

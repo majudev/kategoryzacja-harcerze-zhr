@@ -6,6 +6,7 @@ COPY . .
 
 RUN npm install && npx prisma generate && npm run build
 
+RUN apt-get update && apt-get -y install cron
 COPY ranking.cron /etc/cron.d/ranking.cron
 RUN chmod 0644 /etc/cron.d/ranking.cron
 #RUN crontab /etc/cron.d/ranking.cron
