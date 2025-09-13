@@ -1,11 +1,11 @@
 services:
   frontend:
-    image: michalmajzhr/kategoryzacja-harcerze-zhr-frontend:v1.0
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-frontend:v1.4
     restart: always
     environment:
       REACT_APP_API_URL: http://localhost:8080/api
   backend-w1:
-    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.0
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.4
     restart: always
     environment:
       OAUTH_GOOGLE_ID:
@@ -17,7 +17,7 @@ services:
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
       BCRYPT_ROUNDS: 11
   backend-w2:
-    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.0
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.4
     restart: always
     environment:
       OAUTH_GOOGLE_ID:
@@ -29,7 +29,7 @@ services:
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
       BCRYPT_ROUNDS: 11
   backend-w3:
-    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.0
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.4
     restart: always
     environment:
       OAUTH_GOOGLE_ID:
@@ -41,11 +41,21 @@ services:
       DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
       BCRYPT_ROUNDS: 11
   backend-w4:
-    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.0
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-backend:v1.4
     restart: always
     environment:
       OAUTH_GOOGLE_ID:
       OAUTH_GOOGLE_SECRET:
+      SMTP_LOGIN:
+      SMTP_PASSWORD:
+      BASEURL: http://localhost:8080
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: mysql://master:master@mysql:3306/kategoryzacja
+      BCRYPT_ROUNDS: 11
+  crontab:
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-cron:v1.4
+    restart: always
+    environment:
       SMTP_LOGIN:
       SMTP_PASSWORD:
       BASEURL: http://localhost:8080
@@ -71,5 +81,5 @@ services:
       --save ""
       --appendonly no
   nginx:
-    image: michalmajzhr/kategoryzacja-harcerze-zhr-nginx:v1.0
+    image: michalmajzhr/kategoryzacja-harcerze-zhr-nginx:v1.4
     restart: always

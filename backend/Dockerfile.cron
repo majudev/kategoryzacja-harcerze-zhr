@@ -1,0 +1,14 @@
+FROM node:20
+
+WORKDIR /backend
+
+COPY . .
+
+RUN npm install && npx prisma generate && npm run build
+
+COPY ranking.cron /etc/cron.d/ranking.cron
+RUN chmod 0644 /etc/cron.d/ranking.cron
+#RUN crontab /etc/cron.d/ranking.cron
+RUN touch /var/log/cron.log
+
+CMD cron && tail -f /var/log/cron.log

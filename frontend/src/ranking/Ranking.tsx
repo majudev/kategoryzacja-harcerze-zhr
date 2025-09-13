@@ -33,6 +33,7 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
     const [rankingDistrict, setRankingDistrict] = useState<string>("");
     const [ranking, setRanking] = useState<Array<Team>>([]);
     const [rankingByPts, setRankingByPts] = useState<Array<Team>>([]);
+    const [rankingByCategory, setRankingByCategory] = useState<Array<Team>>([]);
     const [sortByPts, setSortByPts] = useState(false);
 
     useEffect(() => {
@@ -40,10 +41,24 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
     }, [rankingYear]);
 
     useEffect(() => {
-      setRankingByPts(ranking.sort((a,b) => {
+      const sortPts = (a: Team, b: Team) => {
         if(a.points > b.points) return -1;
         if(b.points < b.points) return 1;
         return a.name.localeCompare(b.name);
+      }
+      setRankingByPts(ranking.sort(sortPts));
+      setRankingByCategory(ranking.sort((a,b) => {
+        if(a.category == "PUSZCZANSKA") {
+          if(b.category !== "PUSZCZANSKA") return -1;
+          return sortPts(a, b);
+        }
+        if(a.category == "LESNA") {
+          if(b.category == "PUSZCZANSKA") return 1;
+          if(b.category == "LESNA") return sortPts(a, b);
+          return -1;
+        }
+        if(b.category !== "POLOWA") return 1;
+        return sortPts(a, b);
       }));
     }, [ranking]);
 
@@ -68,7 +83,7 @@ const Ranking = ({userinfo} : {userinfo: UserInfo | null}) => {
       }
     };
 
-    const displayRanking = sortByPts ? rankingByPts : ranking;
+    const displayRanking = sortByPts ? rankingByPts : rankingByCategory;
     
 
     return (

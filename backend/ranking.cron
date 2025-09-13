@@ -1,0 +1,1 @@
+38 0 * * * root node /backend/dist/utils/rebuild-ranking.js >> /var/log/cron.log 2>&1
