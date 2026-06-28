@@ -1,5 +1,5 @@
 #!/bin/bash
-TAG="v1.4"
+TAG="v1.5"
 
 if [[ "$1" != "" ]]; then
 	TAG="$1"
