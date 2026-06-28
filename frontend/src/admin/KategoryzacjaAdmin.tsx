@@ -13,6 +13,32 @@ import { CategorizationDetails, Category, CategoryInfo, Task, UserInfo } from ".
 
 const API_ROOT = process.env.REACT_APP_API_URL;
 
+// xlsx-js-style (a styling-capable fork of SheetJS) is loaded on demand from a
+// CDN so it never enters the main bundle. We use the fork instead of plain
+// `xlsx` because the community SheetJS build drops cell styling (bold, wrap,
+// alignment) on write. The script is fetched only the first time the user
+// exports an XLSX file. It still exposes the global as `window.XLSX`.
+const XLSX_CDN_URL = "https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js";
+
+let xlsxLibLoader: Promise<any> | null = null;
+const loadXlsxLib = (): Promise<any> => {
+  if ((window as any).XLSX) return Promise.resolve((window as any).XLSX);
+  if (xlsxLibLoader) return xlsxLibLoader;
+
+  xlsxLibLoader = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = XLSX_CDN_URL;
+    script.async = true;
+    script.onload = () => resolve((window as any).XLSX);
+    script.onerror = () => {
+      xlsxLibLoader = null; // allow a retry on next click
+      reject(new Error("Nie udało się pobrać biblioteki XLSX z CDN."));
+    };
+    document.body.appendChild(script);
+  });
+  return xlsxLibLoader;
+};
+
 interface TeamInfo {
   id: number;
   name: string;
@@ -234,7 +260,99 @@ const KategoryzacjaAdmin = ({userinfo} : {userinfo: UserInfo | null}) => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     };
-    
+
+    const downloadXlsx = async (initialTasks: Task[], categories: Category[]) => {
+      let XLSX;
+      try {
+        XLSX = await loadXlsxLib();
+      } catch (err) {
+        alert((err as Error).message);
+        return;
+      }
+
+      // Build the sheet as an array of arrays. SheetJS infers the cell type
+      // from each JS value, so numbers stay numeric and nothing needs escaping.
+      const header = [
+        'Kategoria',
+        'Nazwa zadania',
+        'Wpisana wartość',
+        'Przyznane punkty',
+        'Oznaczone gwiazdką'
+      ];
+
+      const rows: (string | number)[][] = [header];
+
+      // InitialTasks – always labelled "Wymaganie podstawowe"
+      initialTasks.forEach(task => {
+        rows.push([
+          'Wymaganie podstawowe',              // Kategoria
+          task.name,                           // Nazwa zadania
+          task.value ? 'Tak' : 'Nie',         // Wpisana wartość (boolean)
+          '',                                  // Przyznane punkty (empty)
+          ''                                   // Oznaczone gwiazdką (empty)
+        ]);
+      });
+
+      // Then each Category and its tasks
+      categories.forEach(cat => {
+        cat.tasks.forEach(task => {
+          rows.push([
+            cat.name,                          // Kategoria
+            task.name,                         // Nazwa zadania
+            task.value,                        // Wpisana wartość (number)
+            task.points,                       // Przyznane punkty (number)
+            task.favourite ? 'Tak' : 'Nie'    // Oznaczone gwiazdką
+          ]);
+        });
+      });
+
+      const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+      // Column widths. XLSX stores width in character units (the number shown in
+      // Excel's "Column Width" dialog), so we set `wch` for deterministic sizing.
+      // cm -> px (1 cm ≈ 37.795 px @96dpi) -> chars (px = chars*7 + 5 padding).
+      const cmToWch = (cm: number) => Math.round(((cm * 37.7953) - 5) / 7 * 100) / 100;
+      worksheet['!cols'] = [
+        { wch: 21 },           // Kategoria
+        { wch: cmToWch(5.0) }, // Nazwa zadania
+        { wch: cmToWch(3.8) }, // Wpisana wartość
+        { wch: 20 },           // Przyznane punkty
+        { wch: 20 },           // Oznaczone gwiazdką
+      ];
+
+      // Per-cell styling: bold + centered header, wrapped first two columns,
+      // centered columns 3-5.
+      const range = XLSX.utils.decode_range(worksheet['!ref']);
+      for (let r = range.s.r; r <= range.e.r; r++) {
+        for (let c = range.s.c; c <= range.e.c; c++) {
+          const cell = worksheet[XLSX.utils.encode_cell({ r, c })];
+          if (!cell) continue;
+
+          if (r === 0) {
+            // Header row
+            cell.s = {
+              font: { bold: true },
+              alignment: { horizontal: 'center', vertical: 'center', wrapText: true }
+            };
+            continue;
+          }
+
+          const alignment: any = { vertical: 'center' };
+          if (c === 0 || c === 1) alignment.wrapText = true; // wrap long text
+          if (c >= 2) alignment.horizontal = 'center';       // centre columns 3-5
+          cell.s = { alignment };
+        }
+      }
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Arkusz');
+
+      XLSX.writeFile(
+        workbook,
+        `${categorizationDetails?.name} - jednostka ${teaminfo?.name}.xlsx`
+      );
+    };
+
 
     return (
       <NavbarOverlay userinfo={userinfo}>
@@ -266,7 +384,7 @@ const KategoryzacjaAdmin = ({userinfo} : {userinfo: UserInfo | null}) => {
                 <div className="col-12">
                   <div className="card shadow-sm border-0 h-100">
                     <div className="card-body">
-                      <h3 className="text-center">Arkusz jednostki {teaminfo?.name} <button className="btn btn-dark btn-sm" onClick={() => downloadCsv(initialTasklist, tasklist)}>Pobierz CSV</button></h3>
+                      <h3 className="text-center">Arkusz jednostki {teaminfo?.name} <button className="btn btn-dark btn-sm" onClick={() => downloadCsv(initialTasklist, tasklist)}>Pobierz CSV</button> <button className="btn btn-dark btn-sm" onClick={() => downloadXlsx(initialTasklist, tasklist)}>Pobierz Excela</button></h3>
                       <p className="text-center mb-0">{teaminfo?.district.name}</p>
                       <p className="text-center fst-italic mb-0">Arkusz wyświetlany w trybie tylko do odczytu!</p>
                     </div>
